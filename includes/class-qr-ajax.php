@@ -49,7 +49,7 @@ class QR_Ajax {
     $body = implode("\n", $lines);
 
     // ⚠️ CAMBIAR CORREO
-    $to      = 'crondon@gmail.com';
+    $to      = 'crondon@grupoprefor.es';
     $subject = 'Nuevo lead - Pixel Path';
     $headers = ['Content-Type: text/plain; charset=UTF-8'];
 

@@ -62,3 +62,37 @@ body{
   .qr-hud{ font-size:11px; }
   .qr-badge{ font-size:10px; }
 }
+
+/* --- Inicio / portada --- */
+.qr-lead{
+  font-size: 15px;
+  line-height: 1.7;     
+  margin: 12px 0 14px;
+}
+
+.qr-startlist{
+  text-align: left;
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1.6;     
+  margin: 0 0 14px;
+}
+
+.qr-startlist li{
+  margin: 4px 0;      
+}
+
+.qr-start-actions{
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;    
+}
+
+/* Centrado y espaciado del botón Jugar en el menú */
+.qr-start-actions{
+  display:flex;
+  justify-content:center;
+  margin-top:12px;
+}
+
+

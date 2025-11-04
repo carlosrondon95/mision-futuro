@@ -14,17 +14,17 @@
       this.H = this.cv.height;
       this.groundY = this.H - 64;
       this.stations = 8;
-      this.spacing = 360;
-      this.startX = 60;
-      this.portalX = Array.from({length:this.stations}, (_,i)=> this.startX + i*this.spacing);
+      this.spacing  = 360;
+      this.startX   = 60;
+      this.portalX  = Array.from({length:this.stations}, (_,i)=> this.startX + i*this.spacing);
 
       // Estado
-      this.step = 0;               // 0..7
+      this.step = 0;
       this.answers = [];
       this.score = freshScore();
 
-      // Héroe
-      this.hero = { x:this.startX, y:this.groundY-8, w:42, h:42, dx:0 };
+      // Héroe 
+      this.hero = { x:this.startX - 140, y:this.groundY-8, w:42, h:42, dx:0 };
 
       // Cámara
       this.camX = 0;
@@ -138,7 +138,7 @@
         ctx.fillText(String(i+1), x, gy-80);
       }
 
-      // Héroe (vectorial, sin imágenes externas)
+      // Héroe (vectorial)
       ctx.save();
       ctx.translate(this.hero.x, this.hero.y);
       ctx.fillStyle = '#00BCD4';

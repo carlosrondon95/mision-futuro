@@ -3,6 +3,50 @@
 
   function close(){ const m = document.querySelector('.qr-modal'); if (m) m.remove(); }
 
+  /* ===== Menú de inicio ===== */
+  function startModal(onPlay){
+  if (document.querySelector('.qr-modal')) return;
+  const modal = document.createElement('div');
+  modal.className = 'qr-modal';
+  const card = document.createElement('div');
+  card.className = 'qr-card';
+  card.innerHTML = `
+    <h3 class="qr-title">🎮 Quiz Versus</h3>
+    <p class="qr-lead">
+      <strong>Tu futuro empieza hoy: prepárate y alcanza tu meta.</strong>
+    </p>
+    <ul class="qr-startlist">
+      <li>Mueve el personaje con <span class="qr-startkbd">←</span> <span class="qr-startkbd">→</span> o <span class="qr-startkbd">A</span> <span class="qr-startkbd">D</span>.</li>
+      <li>Desplázate hasta la <strong>puerta 1</strong> para comenzar.</li>
+      <li>Responde las <strong>8 preguntas</strong> y descubre tu recomendación.</li>
+    </ul>
+    <div class="qr-start-actions">
+      <button class="qr-btn" id="qrStartBtn">Jugar</button>
+    </div>
+  `;
+  modal.appendChild(card);
+  root.appendChild(modal);
+
+  const cleanup = ()=>{
+    window.removeEventListener('keydown', keyHandler);
+    close();
+  };
+  const start = ()=>{
+    cleanup();
+    onPlay && onPlay();
+  };
+  const keyHandler = (e)=>{
+    const k = e.key.toLowerCase();
+    if (k === 'enter' || k === ' ') { e.preventDefault(); start(); }
+  };
+
+  document.getElementById('qrStartBtn').addEventListener('click', start);
+  window.addEventListener('keydown', keyHandler);
+}
+
+
+
+  /* ===== Modal de pregunta ===== */
   function questionModal(qObj, onAnswer){
     if (document.querySelector('.qr-modal')) return;
     const modal = document.createElement('div');
@@ -27,6 +71,7 @@
     modal.appendChild(card); root.appendChild(modal);
   }
 
+  /* ===== Modal de formulario ===== */
   function formModal(onSubmit){
     if (document.querySelector('.qr-modal')) return;
     const modal = document.createElement('div');
@@ -56,28 +101,43 @@
     modal.appendChild(card); root.appendChild(modal);
   }
 
-  function endingModal(result, onRestart){
-    const { top1, top2, bullets } = result;
-    const modal = document.createElement('div');
-    modal.className = 'qr-modal';
-    const card = document.createElement('div');
-    card.className = 'qr-card';
-    card.innerHTML = `
-      <h3 class="qr-title">🎖 Ceremonia de Asignación</h3>
-      <p>Tu senda encaja con:</p>
-      <div class="qr-badge">${top1}</div>
-      ${top2 ? `<div class="qr-badge">También: ${top2}</div>` : ''}
-      <ul style="text-align:left; display:inline-block; font-size:14px; padding-left:18px;">
-        ${bullets.map(b=>`<li>${b}</li>`).join('')}
-      </ul>
-      <button class="qr-btn" id="btnRestart">Reiniciar</button>
-    `;
-    modal.appendChild(card); root.appendChild(modal);
-    document.getElementById('btnRestart').addEventListener('click', onRestart);
-  }
+  /* ===== Pantalla final ===== */
+function endingModal(result, onRestart){
+  const { top1, top2, bullets } = result;
+  const modal = document.createElement('div');
+  modal.className = 'qr-modal';
 
+  const card = document.createElement('div');
+  card.className = 'qr-card qr-end';
+
+  card.innerHTML = `
+    <h3 class="qr-title">🎖 Ceremonia de Asignación</h3>
+
+    <p class="qr-end-lead"><strong>Tu perfil ideal:</strong> ${top1}</p>
+
+    <div class="qr-end-badges">
+      <div class="qr-badge">${top1}</div>
+      ${top2 ? `<div class="qr-badge">También encajas en: ${top2}</div>` : ''}
+    </div>
+
+    <ul class="qr-end-list">
+      ${bullets.map(b=>`<li>${b}</li>`).join('')}
+    </ul>
+
+    <div class="qr-end-actions">
+      <button class="qr-btn" id="btnRestart">Reiniciar</button>
+    </div>
+  `;
+
+  modal.appendChild(card);
+  root.appendChild(modal);
+  document.getElementById('btnRestart').addEventListener('click', onRestart);
+}
+
+  // Helpers
   function val(sel){ const n = document.querySelector(sel); return n ? n.value.trim() : ''; }
   function checked(sel){ const n = document.querySelector(sel); return !!(n && n.checked); }
 
-  window.QRUI = { questionModal, formModal, endingModal, close };
-})();
+  window.QRUI = { startModal, questionModal, formModal, endingModal, close };
+})
+();
