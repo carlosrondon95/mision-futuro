@@ -31,7 +31,7 @@ class QR_Ajax {
       wp_send_json_error(['message' => 'Debes aceptar la política de privacidad.'], 422);
     }
 
-    // Arma email
+    // Email
     $lines = [];
     $lines[] = "Nuevo lead Pixel Path";
     $lines[] = "---------------------";
@@ -50,7 +50,7 @@ class QR_Ajax {
 
     // ⚠️ CAMBIAR CORREO
     $to      = 'crondon@grupoprefor.es';
-    $subject = 'Nuevo lead - Pixel Path';
+    $subject = 'Nuevo lead - Quiz Versus';
     $headers = ['Content-Type: text/plain; charset=UTF-8'];
 
     $sent = wp_mail($to, $subject, $body, $headers);
