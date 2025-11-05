@@ -110,7 +110,7 @@ body {
   touch-action: none;
 }
 
-/* Modal retro (subimos z-index para verse sobre #qr-app en FS) */
+/* Modal retro */
 .qr-modal {
   position: fixed;
   inset: 0;
@@ -118,7 +118,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10006; /* antes 9999: ahora por encima de #qr-app (10000), pad (10002) y X (10003) */
+  z-index: 10006; /* por encima de #qr-app (10000), pad (10002) y X (10003) */
 }
 .qr-card {
   background: #fff;
@@ -251,8 +251,8 @@ body {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0; /* valor base; ajustamos más abajo por estado/orientación */
-  z-index: 10002; /* por encima de #qr-app (10000) */
+  bottom: 0;
+  z-index: 10002; /* por encima de #qr-app */
   padding: 8px;
   pointer-events: none;
   color: #fff;
@@ -261,20 +261,16 @@ body {
 .qr-pad__right {
   display: flex;
   gap: 8px;
-} /* gap más pequeño */
+}
 .qr-pad__btn {
   pointer-events: auto;
-  min-width: clamp(
-    44px,
-    10vw,
-    64px
-  ); /* antes 56–80px → más pequeño y adaptativo */
+  min-width: clamp(44px, 10vw, 64px);
   min-height: clamp(44px, 10vw, 64px);
   border-radius: 12px;
   border: 4px solid var(--gray-dark);
   background: rgba(255, 255, 255, 0.9);
   color: #111;
-  font-size: clamp(16px, 3.6vw, 22px); /* texto proporcional */
+  font-size: clamp(16px, 3.6vw, 22px);
   font-weight: 700;
   box-shadow: 0 4px 0 var(--black);
   touch-action: none;
@@ -304,12 +300,12 @@ body {
 .qr-pad--landscape .qr-pad__left {
   position: fixed;
   left: 16px;
-  bottom: calc(20px + env(safe-area-inset-bottom));
+  bottom: calc(24px + env(safe-area-inset-bottom));
 }
 .qr-pad--landscape .qr-pad__right {
   position: fixed;
   right: 16px;
-  bottom: calc(20px + env(safe-area-inset-bottom));
+  bottom: calc(24px + env(safe-area-inset-bottom));
 }
 .qr-pad--landscape .qr-pad__btn {
   background: rgba(0, 0, 0, 0.5);
@@ -399,9 +395,9 @@ body {
 }
 .is-mobile #qr-app.qr-app--fs.is-portrait #qr-stage {
   display: none;
-} /* <-- recorta el fondo estirado detrás del diálogo */
+}
 
-/* Sube un poco el pad en portrait también (separa del borde inferior) */
+/* Sube un poco el pad en portrait también */
 .is-mobile #qr-app.qr-app--fs .qr-pad.qr-pad--portrait {
   bottom: calc(env(safe-area-inset-bottom) + 12px);
 }
@@ -429,4 +425,22 @@ body {
   .qr-badge {
     font-size: 10px;
   }
+}
+
+/* === FIX: ocultar el stage en móvil vertical FUERA de fullscreen (modal de JUGAR) === */
+@media (orientation: portrait) {
+  .is-mobile #qr-app:not(.qr-app--fs) #qr-stage {
+    display: none;
+  }
+}
+
+/* === Refuerzo específico en FULLSCREEN: botones un poco más pequeños y más arriba === */
+.is-mobile #qr-app.qr-app--fs .qr-pad__btn {
+  min-width: clamp(40px, 9vw, 56px);
+  min-height: clamp(40px, 9vw, 56px);
+  font-size: clamp(14px, 3vw, 20px);
+}
+.is-mobile #qr-app.qr-app--fs .qr-pad.qr-pad--landscape .qr-pad__left,
+.is-mobile #qr-app.qr-app--fs .qr-pad.qr-pad--landscape .qr-pad__right {
+  bottom: calc(28px + env(safe-area-inset-bottom));
 }

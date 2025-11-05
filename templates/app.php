@@ -38,7 +38,7 @@
         continuar.</div>
     </div>
   </div>
-</div>
 
-<!-- Modal root -->
-<div id="qr-modal-root"></div>
+  <!-- ⬇️ MOVIDO AQUÍ: el modal root debe ser DESCENDIENTE de #qr-app para verse en fullscreen -->
+  <div id="qr-modal-root"></div>
+</div>

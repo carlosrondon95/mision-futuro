@@ -15,26 +15,83 @@ class QR_Assets
       return;
     }
 
-    $ver = '2.3.0';
+    // Versión por fichero: fuerza recarga cuando cambias un asset.
+    $ver = function ($relPath) {
+      $path = QR_PLUGIN_DIR . ltrim($relPath, '/');
+      return file_exists($path) ? (string) filemtime($path) : (string) time();
+    };
 
     // CSS
-    wp_enqueue_style('qr-app', QR_PLUGIN_URL . 'assets/css/app.css', [], $ver);
+    wp_enqueue_style(
+      'qr-app',
+      QR_PLUGIN_URL . 'assets/css/app.css',
+      [],
+      $ver('assets/css/app.css')
+    );
 
     // JS vendor
-    wp_enqueue_script('qr-microloop', QR_PLUGIN_URL . 'assets/js/vendor/microloop.js', [], $ver, true);
+    wp_enqueue_script(
+      'qr-microloop',
+      QR_PLUGIN_URL . 'assets/js/vendor/microloop.js',
+      [],
+      $ver('assets/js/vendor/microloop.js'),
+      true
+    );
 
     // UI/Data
-    wp_enqueue_script('qr-data', QR_PLUGIN_URL . 'assets/js/data.js', [], $ver, true);
-    wp_enqueue_script('qr-ui', QR_PLUGIN_URL . 'assets/js/ui.js', [], $ver, true);
+    wp_enqueue_script(
+      'qr-data',
+      QR_PLUGIN_URL . 'assets/js/data.js',
+      [],
+      $ver('assets/js/data.js'),
+      true
+    );
+    wp_enqueue_script(
+      'qr-ui',
+      QR_PLUGIN_URL . 'assets/js/ui.js',
+      [],
+      $ver('assets/js/ui.js'),
+      true
+    );
 
     // Responsive + Virtual Pad + Fullscreen
-    wp_enqueue_script('qr-viewport', QR_PLUGIN_URL . 'assets/js/viewport.js', [], $ver, true);
-    wp_enqueue_script('qr-virtualpad', QR_PLUGIN_URL . 'assets/js/virtualpad.js', [], $ver, true);
-    wp_enqueue_script('qr-fs', QR_PLUGIN_URL . 'assets/js/fs.js', [], $ver, true);
+    wp_enqueue_script(
+      'qr-viewport',
+      QR_PLUGIN_URL . 'assets/js/viewport.js',
+      [],
+      $ver('assets/js/viewport.js'),
+      true
+    );
+    wp_enqueue_script(
+      'qr-virtualpad',
+      QR_PLUGIN_URL . 'assets/js/virtualpad.js',
+      [],
+      $ver('assets/js/virtualpad.js'),
+      true
+    );
+    wp_enqueue_script(
+      'qr-fs',
+      QR_PLUGIN_URL . 'assets/js/fs.js',
+      [],
+      $ver('assets/js/fs.js'),
+      true
+    );
 
     // Game + Bootstrap
-    wp_enqueue_script('qr-game', QR_PLUGIN_URL . 'assets/js/game.js', ['qr-microloop', 'qr-data', 'qr-ui', 'qr-viewport', 'qr-virtualpad'], $ver, true);
-    wp_enqueue_script('qr-bootstrap', QR_PLUGIN_URL . 'assets/js/bootstrap.js', ['qr-game', 'qr-fs'], $ver, true);
+    wp_enqueue_script(
+      'qr-game',
+      QR_PLUGIN_URL . 'assets/js/game.js',
+      ['qr-microloop', 'qr-data', 'qr-ui', 'qr-viewport', 'qr-virtualpad'],
+      $ver('assets/js/game.js'),
+      true
+    );
+    wp_enqueue_script(
+      'qr-bootstrap',
+      QR_PLUGIN_URL . 'assets/js/bootstrap.js',
+      ['qr-game', 'qr-fs'],
+      $ver('assets/js/bootstrap.js'),
+      true
+    );
 
     // Datos para AJAX/branding
     wp_localize_script('qr-bootstrap', 'qrAjax', [
