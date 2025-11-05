@@ -296,6 +296,7 @@
       ctx.fillStyle = "#000";
       ctx.fill();
       ctx.restore();
+      
 
       // Héroe
       ctx.save();
