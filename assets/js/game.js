@@ -4,13 +4,23 @@
     window.QRData;
   const { questionModal, formModal, endingModal } = window.QRUI;
 
+  // Paleta corporativa para el render vectorial (fallback)
+  const BRAND = {
+    dark: "#9a794a", // marrón oscuro
+    light: "#d09e55", // marrón claro
+    gDark: "#706f6f", // gris oscuro
+    gLite: "#9d9d9c", // gris claro
+    black: "#000000", // negro
+  };
+
   class QRGame {
-    constructor(canvas, hudBadge, assets) {
+    constructor(canvas, hudBadge, assets, pad) {
       this.cv = canvas;
       this.ctx = canvas.getContext("2d");
       this.ctx.imageSmoothingEnabled = false; // nitidez pixel
       this.hudBadge = hudBadge;
       this.assets = assets || {};
+      this.pad = pad || { left: false, right: false, onJump: () => {} };
 
       // Mundo
       this.W = this.cv.width;
@@ -59,21 +69,17 @@
       this.onKeyDown = (e) => {
         const code = e.code || e.key;
 
-        // Bloquear scroll de la página con Espacio / Flecha Arriba / Flecha Abajo,
-        // excepto si el foco está en un campo de texto
+        // Bloquear scroll (Espacio / Arriba / Abajo) salvo si escribes
         const isScrollKey =
           code === "Space" ||
           code === "ArrowUp" ||
           code === "ArrowDown" ||
           e.key === " " ||
           code === "Spacebar";
-        if (isScrollKey && !this.isTypingTarget(e.target)) {
-          e.preventDefault();
-        }
+        if (isScrollKey && !this.isTypingTarget(e.target)) e.preventDefault();
 
-        // Registrar intención de salto (buffer), permite doble salto y coyote time
         if (code === "Space" || code === "ArrowUp" || code === "KeyW") {
-          this.jumpBufferT = this.jumpBuffer;
+          this.queueJump();
         }
       };
       window.addEventListener("keydown", this.onKeyDown, { passive: false });
@@ -91,6 +97,10 @@
       );
     }
 
+    queueJump() {
+      this.jumpBufferT = this.jumpBuffer;
+    }
+
     start() {
       this.loop.start();
     }
@@ -103,17 +113,12 @@
     }
 
     tryJump() {
-      // coyote time: permite saltar justo tras dejar el suelo
       const canGroundJump = this.onGround() || this.coyoteTimer > 0;
       const canAirJump = this.jumpCount < this.maxJumps;
       if (canGroundJump || canAirJump) {
         this.hero.vy = -this.jumpSpeed;
-        if (this.onGround() || this.coyoteTimer > 0) {
-          this.jumpCount = 1; // primer salto consumido
-        } else {
-          this.jumpCount++; // salto extra en aire
-        }
-
+        if (this.onGround() || this.coyoteTimer > 0) this.jumpCount = 1;
+        else this.jumpCount++;
         this.coyoteTimer = 0;
         return true;
       }
@@ -121,24 +126,27 @@
     }
 
     update(dt) {
-      // Entrada lateral
-      if (Keys.isDown("ArrowRight") || Keys.isDown("KeyD")) this.hero.dx += 1;
-      if (Keys.isDown("ArrowLeft") || Keys.isDown("KeyA")) this.hero.dx -= 1;
+      // Entrada lateral: teclado O virtual pad
+      const goRight =
+        Keys.isDown("ArrowRight") || Keys.isDown("KeyD") || !!this.pad.right;
+      const goLeft =
+        Keys.isDown("ArrowLeft") || Keys.isDown("KeyA") || !!this.pad.left;
+
+      if (goRight) this.hero.dx += 0.8; // aceleración calmada
+      if (goLeft) this.hero.dx -= 0.7;
 
       // Ficción / movimiento horizontal
       this.hero.dx *= 0.9;
-      this.hero.x += this.hero.dx;
-
-      // Limitar velocidad máxima (px/frame)
-      const MAX_SPEED = 7; // ~420 px/s a 60fps
+      // Limitar velocidad máxima
+      const MAX_SPEED = 7;
       if (this.hero.dx > MAX_SPEED) this.hero.dx = MAX_SPEED;
       if (this.hero.dx < -MAX_SPEED) this.hero.dx = -MAX_SPEED;
 
+      this.hero.x += this.hero.dx;
+
       // Procesa buffer de salto
       if (this.jumpBufferT > 0) {
-        if (this.tryJump()) {
-          this.jumpBufferT = 0;
-        }
+        if (this.tryJump()) this.jumpBufferT = 0;
       }
 
       // Gravedad + movimiento vertical
@@ -153,7 +161,6 @@
         this.jumpCount = 0; // recupera saltos al tocar suelo
         this.coyoteTimer = this.coyoteTime;
       } else {
-        // en aire
         this.coyoteTimer = Math.max(0, this.coyoteTimer - dt);
       }
 
@@ -203,7 +210,7 @@
           return;
         }
 
-        // Estaciones 1 a 7: pregunta normal
+        // Estaciones 1..7: pregunta normal
         questionModal(qObj, (opt) => {
           const choice = { id: qObj.id, q: qObj.q, value: opt };
           this.answers.push(choice);
@@ -215,7 +222,7 @@
             this.hudBadge.textContent = `${Math.min(this.step + 1, 8)} / 8`;
 
           this.start();
-          this.hero.dx = 1.2; // empujoncito hacia delante
+          this.hero.dx = 1.2; // empujón más suave al salir de una pregunta
         });
       }
     }
@@ -234,23 +241,23 @@
         H = this.H,
         gy = this.groundY;
 
-      // Cielo
+      /* Fondo neutro en grises para no competir con la paleta corporativa */
       const g = ctx.createLinearGradient(0, 0, 0, H);
-      g.addColorStop(0, "#bdefff");
-      g.addColorStop(1, "#e8fdff");
+      g.addColorStop(0, "#f3f3f3");
+      g.addColorStop(1, "#ffffff");
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
 
       ctx.save();
       ctx.translate(-this.camX, 0);
 
-      // Suelo
-      ctx.fillStyle = "#7ed0df";
+      /* Suelo en grises corporativos */
+      ctx.fillStyle = BRAND.gDark;
       ctx.fillRect(-5000, gy, 10000, 8);
-      ctx.fillStyle = "#a7e9f3";
+      ctx.fillStyle = BRAND.gLite;
       for (let x = -5000; x < 5000; x += 32) ctx.fillRect(x, gy + 8, 16, 6);
 
-      // Portales
+      /* Portales (fallback): activo = marrón claro, inactivo = gris claro, contorno gris oscuro */
       for (let i = 0; i < this.stations; i++) {
         const x = this.portalX[i];
         const yTop = gy - 72;
@@ -260,21 +267,21 @@
             ph = 80;
           ctx.drawImage(this.assets.portal, x - pw / 2, gy - ph, pw, ph);
         } else {
-          ctx.fillStyle = i <= this.step ? "#ffe18c" : "#cfd8dc";
+          ctx.fillStyle = i <= this.step ? BRAND.light : BRAND.gLite;
           ctx.fillRect(x - 24, yTop, 48, 72);
           ctx.lineWidth = 6;
-          ctx.strokeStyle = "#222";
+          ctx.strokeStyle = BRAND.gDark;
           ctx.strokeRect(x - 24, yTop, 48, 72);
         }
 
-        // número encima
-        ctx.fillStyle = "#222";
-        ctx.font = "16px monospace";
+        // número encima (gris oscuro para buena lectura)
+        ctx.fillStyle = BRAND.gDark;
+        ctx.font = '16px "Press Start 2P", monospace';
         ctx.textAlign = "center";
         ctx.fillText(String(i + 1), x, gy - 80);
       }
 
-      // Sombra bajo el héroe (depende de altura)
+      /* Sombra bajo el héroe (negra y suave, según altura) */
       const foot = gy - 8;
       const lift = Math.max(0, foot - this.hero.y);
       const maxLift = 120;
@@ -293,11 +300,11 @@
         0,
         Math.PI * 2
       );
-      ctx.fillStyle = "#000";
+      ctx.fillStyle = BRAND.black;
       ctx.fill();
       ctx.restore();
 
-      // Héroe
+      /* Héroe (fallback vectorial) con marrón claro + contorno gris oscuro */
       ctx.save();
       ctx.translate(this.hero.x, this.hero.y);
       if (this.assets.hero) {
@@ -305,10 +312,10 @@
           h = this.hero.h;
         ctx.drawImage(this.assets.hero, -w / 2, -h, w, h);
       } else {
-        ctx.fillStyle = "#00BCD4";
+        ctx.fillStyle = BRAND.light;
         ctx.fillRect(-this.hero.w / 2, -this.hero.h, this.hero.w, this.hero.h);
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "#222";
+        ctx.strokeStyle = BRAND.gDark;
         ctx.strokeRect(
           -this.hero.w / 2,
           -this.hero.h,
