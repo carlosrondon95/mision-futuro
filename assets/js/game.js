@@ -56,11 +56,13 @@
       this.hero = {
         x: this.startX - 140,
         y: this.footY,
-        w: 42,
-        h: 42,
+        w: 42, // ancho de la caja de colisión (física)
+        h: 42, // alto de la caja de colisión (física)
         dx: 0,
         vy: 0,
+        dh: 58, // altura de DIBUJO del sprite (no afecta a la física)
       };
+
       this.anim = { facing: 1, walkTimer: 0, frameDur: 0.12 };
       this.camX = 0;
 
@@ -606,8 +608,10 @@
         ctx.restore();
       }
 
+      // --- HERO ---
       ctx.save();
       ctx.translate(this.hero.x, this.hero.y);
+
       const hasHero =
         this.assets.hero &&
         this.assets.hero.idle &&
@@ -623,11 +627,17 @@
           const n = Math.floor(this.anim.walkTimer / this.anim.frameDur) % 2;
           sprite = n === 0 ? this.assets.hero.stepR : this.assets.hero.stepL;
         }
+
+        // Altura de dibujo fija + anchura proporcional al PNG (evita “achatado”)
+        const drawH = this.hero.dh || 58;
+        const ratio =
+          sprite && sprite.height ? sprite.width / sprite.height : 1;
+        const drawW = Math.max(1, Math.round(drawH * ratio));
+
         if (this.anim.facing === -1) ctx.scale(-1, 1);
-        const w = this.hero.w,
-          h = this.hero.h;
-        ctx.drawImage(sprite, -w / 2, -h, w, h);
+        ctx.drawImage(sprite, -drawW / 2, -drawH, drawW, drawH);
       } else {
+        // Fallback “caja” si faltan assets
         ctx.fillStyle = BRAND.light;
         ctx.fillRect(-this.hero.w / 2, -this.hero.h, this.hero.w, this.hero.h);
         ctx.lineWidth = 3;
@@ -641,6 +651,7 @@
         ctx.fillStyle = "#fff";
         ctx.fillRect(-10, -this.hero.h + 6, 20, 12);
       }
+
       ctx.restore();
 
       ctx.restore();
