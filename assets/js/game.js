@@ -4,25 +4,23 @@
     window.QRData;
   const { questionModal, formModal, endingModal } = window.QRUI;
 
-  // Paleta corporativa para el render vectorial (fallback)
   const BRAND = {
-    dark: "#9a794a", // marrón oscuro
-    light: "#d09e55", // marrón claro
-    gDark: "#706f6f", // gris oscuro
-    gLite: "#9d9d9c", // gris claro
-    black: "#000000", // negro
+    dark: "#9a794a",
+    light: "#d09e55",
+    gDark: "#706f6f",
+    gLite: "#9d9d9c",
+    black: "#000000",
   };
 
   class QRGame {
     constructor(canvas, hudBadge, assets, pad) {
       this.cv = canvas;
       this.ctx = canvas.getContext("2d");
-      this.ctx.imageSmoothingEnabled = false; // nitidez pixel
+      this.ctx.imageSmoothingEnabled = false;
       this.hudBadge = hudBadge;
       this.assets = assets || {};
       this.pad = pad || { left: false, right: false, onJump: () => {} };
 
-      // Mundo
       this.W = this.cv.width;
       this.H = this.cv.height;
       this.groundY = this.H - 64;
@@ -34,22 +32,19 @@
         (_, i) => this.startX + i * this.spacing
       );
 
-      // Estado
       this.step = 0; // 0..7
       this.answers = [];
       this.score = freshScore();
 
-      // Física
-      this.gravity = 1800; // px/s^2
-      this.jumpSpeed = 600; // velocidad del salto
-      this.maxJumps = 2; // doble salto
+      this.gravity = 1800;
+      this.jumpSpeed = 600;
+      this.maxJumps = 2;
       this.jumpCount = 0;
-      this.coyoteTime = 0.08; // margen tras dejar el suelo
+      this.coyoteTime = 0.08;
       this.coyoteTimer = 0;
-      this.jumpBuffer = 0.12; // margen de input antes de tocar suelo
+      this.jumpBuffer = 0.12;
       this.jumpBufferT = 0;
 
-      // Héroe (arranca a la izquierda de la puerta 1)
       this.hero = {
         x: this.startX - 140,
         y: this.groundY - 8,
@@ -58,18 +53,12 @@
         dx: 0,
         vy: 0,
       };
-
-      // Cámara
       this.camX = 0;
 
-      // Bucle
       this.loop = createLoop(this.update.bind(this), this.render.bind(this));
 
-      // Listener de teclado: bloquear scroll y buffer de salto
       this.onKeyDown = (e) => {
         const code = e.code || e.key;
-
-        // Bloquear scroll (Espacio / Arriba / Abajo) salvo si escribes
         const isScrollKey =
           code === "Space" ||
           code === "ArrowUp" ||
@@ -77,15 +66,12 @@
           e.key === " " ||
           code === "Spacebar";
         if (isScrollKey && !this.isTypingTarget(e.target)) e.preventDefault();
-
-        if (code === "Space" || code === "ArrowUp" || code === "KeyW") {
+        if (code === "Space" || code === "ArrowUp" || code === "KeyW")
           this.queueJump();
-        }
       };
       window.addEventListener("keydown", this.onKeyDown, { passive: false });
     }
 
-    // Detecta si estás escribiendo en un input/textarea/select
     isTypingTarget(el) {
       if (!el) return false;
       const t = (el.tagName || "").toLowerCase();
@@ -126,55 +112,45 @@
     }
 
     update(dt) {
-      // Entrada lateral: teclado O virtual pad
       const goRight =
         Keys.isDown("ArrowRight") || Keys.isDown("KeyD") || !!this.pad.right;
       const goLeft =
         Keys.isDown("ArrowLeft") || Keys.isDown("KeyA") || !!this.pad.left;
 
-      if (goRight) this.hero.dx += 0.8; // aceleración calmada
+      if (goRight) this.hero.dx += 0.8;
       if (goLeft) this.hero.dx -= 0.7;
 
-      // Ficción / movimiento horizontal
       this.hero.dx *= 0.9;
-      // Limitar velocidad máxima
       const MAX_SPEED = 7;
       if (this.hero.dx > MAX_SPEED) this.hero.dx = MAX_SPEED;
       if (this.hero.dx < -MAX_SPEED) this.hero.dx = -MAX_SPEED;
 
       this.hero.x += this.hero.dx;
 
-      // Procesa buffer de salto
       if (this.jumpBufferT > 0) {
         if (this.tryJump()) this.jumpBufferT = 0;
       }
 
-      // Gravedad + movimiento vertical
       this.hero.vy += this.gravity * dt;
       this.hero.y += this.hero.vy * dt;
 
-      // Colisión con el suelo (clamp)
       const groundFoot = this.groundY - 8;
       if (this.hero.y > groundFoot) {
         this.hero.y = groundFoot;
         this.hero.vy = 0;
-        this.jumpCount = 0; // recupera saltos al tocar suelo
+        this.jumpCount = 0;
         this.coyoteTimer = this.coyoteTime;
       } else {
         this.coyoteTimer = Math.max(0, this.coyoteTimer - dt);
       }
 
-      // Decaimiento del jump buffer
       this.jumpBufferT = Math.max(0, this.jumpBufferT - dt);
 
-      // Cámara suave
       const targetCam = this.hero.x - this.W / 2;
       this.camX += (targetCam - this.camX) * 0.07;
 
-      // Portal activo actual (0..7)
       const px = this.portalX[this.step];
 
-      // Activar solo si estamos cerca y en el suelo
       if (Math.abs(this.hero.x - px) < 36 && this.onGround()) {
         this.hero.dx = 0;
         this.stop();
@@ -182,7 +158,7 @@
         const qObj = QUESTIONS[this.step];
 
         if (qObj.id === "form") {
-          // Estación 8: formulario SOLO al llegar físicamente
+          // Estación 8: formulario (envío AJAX)
           formModal(async ({ name, email, phone, consent }) => {
             try {
               const payload = new URLSearchParams();
@@ -193,18 +169,39 @@
               payload.append("phone", phone);
               payload.append("consent", consent);
               payload.append("answers", JSON.stringify(this.answers));
+              // (honeypot opcional) payload.append("website","");
+
               const r = await fetch(qrAjax.ajax_url, {
                 method: "POST",
                 headers: {
-                  "Content-Type": "application/x-www-form-urlencoded",
+                  "Content-Type":
+                    "application/x-www-form-urlencoded; charset=UTF-8",
                 },
                 body: payload.toString(),
+                credentials: "same-origin",
               });
-              const data = await r.json();
+
+              let data = null;
+              try {
+                data = await r.json();
+              } catch (e) {}
+
+              // Fallo: no continuar el juego; muestra error y relanza el loop
+              if (!r.ok || !data || data.success !== true) {
+                const msg =
+                  data && data.data && data.data.message
+                    ? data.data.message
+                    : "No se pudo enviar el correo.";
+                alert(msg);
+                this.start(); // volver al juego sin finalizar
+                return;
+              }
+
+              // OK
               this.finish();
             } catch (e) {
-              alert("Error de red");
-              this.finish();
+              alert("Error de red. Inténtalo de nuevo.");
+              this.start();
             }
           });
           return;
@@ -216,13 +213,12 @@
           this.answers.push(choice);
           applyScoring(this.score, choice);
 
-          // avanzar a la siguiente estación (la 8 es el formulario al llegar)
           this.step++;
           if (this.hudBadge)
             this.hudBadge.textContent = `${Math.min(this.step + 1, 8)} / 8`;
 
           this.start();
-          this.hero.dx = 1.2; // empujón más suave al salir de una pregunta
+          this.hero.dx = 1.2;
         });
       }
     }
@@ -241,7 +237,6 @@
         H = this.H,
         gy = this.groundY;
 
-      /* Fondo neutro en grises para no competir con la paleta corporativa */
       const g = ctx.createLinearGradient(0, 0, 0, H);
       g.addColorStop(0, "#f3f3f3");
       g.addColorStop(1, "#ffffff");
@@ -251,13 +246,11 @@
       ctx.save();
       ctx.translate(-this.camX, 0);
 
-      /* Suelo en grises corporativos */
       ctx.fillStyle = BRAND.gDark;
       ctx.fillRect(-5000, gy, 10000, 8);
       ctx.fillStyle = BRAND.gLite;
       for (let x = -5000; x < 5000; x += 32) ctx.fillRect(x, gy + 8, 16, 6);
 
-      /* Portales (fallback): activo = marrón claro, inactivo = gris claro, contorno gris oscuro */
       for (let i = 0; i < this.stations; i++) {
         const x = this.portalX[i];
         const yTop = gy - 72;
@@ -274,14 +267,12 @@
           ctx.strokeRect(x - 24, yTop, 48, 72);
         }
 
-        // número encima (gris oscuro para buena lectura)
         ctx.fillStyle = BRAND.gDark;
         ctx.font = '16px "Press Start 2P", monospace';
         ctx.textAlign = "center";
         ctx.fillText(String(i + 1), x, gy - 80);
       }
 
-      /* Sombra bajo el héroe (negra y suave, según altura) */
       const foot = gy - 8;
       const lift = Math.max(0, foot - this.hero.y);
       const maxLift = 120;
@@ -304,7 +295,6 @@
       ctx.fill();
       ctx.restore();
 
-      /* Héroe (fallback vectorial) con marrón claro + contorno gris oscuro */
       ctx.save();
       ctx.translate(this.hero.x, this.hero.y);
       if (this.assets.hero) {
