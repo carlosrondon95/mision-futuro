@@ -444,3 +444,18 @@ body {
 .is-mobile #qr-app.qr-app--fs .qr-pad.qr-pad--landscape .qr-pad__right {
   bottom: calc(28px + env(safe-area-inset-bottom));
 }
+
+/* === Errores de validación inline del formulario === */
+.qr-error{
+  color: #d32f2f;       /* rojo legible */
+  font-size: 12px;      /* discreto */
+  line-height: 1.3;
+  min-height: 14px;     /* reserva un pequeño hueco, sin desbordar */
+  margin-top: 4px;
+}
+
+.qr-input.is-invalid{
+  border-color: #d32f2f;
+  box-shadow: 0 3px 0 #000, 0 0 0 2px rgba(211,47,47,0.15) inset;
+}
+

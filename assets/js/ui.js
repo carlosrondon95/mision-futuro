@@ -117,36 +117,186 @@
   }
 
   /* ===== Modal de formulario ===== */
+  /* ===== Modal de formulario (con validación inline) ===== */
   function formModal(onSubmit) {
     if (document.querySelector(".qr-modal")) return;
+
     const modal = document.createElement("div");
     modal.className = "qr-modal";
     const card = document.createElement("div");
     card.className = "qr-card";
 
     card.innerHTML = `
+    <form id="qrLeadForm" novalidate>
       <div class="qr-q">Déjanos tus datos y te enviaremos tu resultado</div>
-      <div class="qr-row"><label>Nombre</label><input class="qr-input" id="fName" type="text" placeholder="Tu nombre"></div>
-      <div class="qr-row"><label>Email</label><input class="qr-input" id="fEmail" type="email" placeholder="tu@email"></div>
-      <div class="qr-row"><label>Teléfono</label><input class="qr-input" id="fPhone" type="tel" placeholder="+34 600 000 000"></div>
-      <div class="qr-row qr-consent"><label><input id="fConsent" type="checkbox"> Acepto la Política de Privacidad</label></div>
-      <button class="qr-btn" id="btnSend">Enviar</button>
-    `;
 
-    card.querySelector("#btnSend").addEventListener("click", () => {
-      const name = val("#fName");
-      const email = val("#fEmail");
-      const phone = val("#fPhone");
-      const consent = checked("#fConsent") ? "1" : "0";
-      if (!name || !email) return alert("Nombre y email son obligatorios");
-      if (consent !== "1") return alert("Debes aceptar la política");
-      close();
-      onSubmit && onSubmit({ name, email, phone, consent });
-    });
+      <div class="qr-row">
+        <label for="fName">Nombre</label>
+        <input class="qr-input" id="fName" type="text" placeholder="Introduzca su nombre" maxlength="99" autocomplete="name">
+        <div class="qr-error" id="errName"></div>
+      </div>
+
+      <div class="qr-row">
+        <label for="fEmail">Email</label>
+        <input class="qr-input" id="fEmail" type="email" placeholder="Introduzca su dirección de correo electrónico" autocomplete="email" inputmode="email">
+        <div class="qr-error" id="errEmail"></div>
+      </div>
+
+      <div class="qr-row">
+        <label for="fPhone">Teléfono</label>
+        <input class="qr-input" id="fPhone" type="tel" placeholder="Introduzca su número de teléfono" inputmode="numeric" autocomplete="tel" pattern="\\d*">
+        <div class="qr-error" id="errPhone"></div>
+      </div>
+
+      <div class="qr-row qr-consent">
+        <label><input id="fConsent" type="checkbox"> Acepto la Política de Privacidad</label>
+        <div class="qr-error" id="errConsent"></div>
+      </div>
+
+      <button class="qr-btn" id="btnSend" type="submit">Enviar</button>
+    </form>
+  `;
 
     modal.appendChild(card);
+    const root =
+      document.querySelector("#qr-app #qr-modal-root") ||
+      document.getElementById("qr-modal-root");
     root.appendChild(modal);
-    emit("qr:modal:open");
+
+    const form = card.querySelector("#qrLeadForm");
+    const nameI = card.querySelector("#fName");
+    const mailI = card.querySelector("#fEmail");
+    const phoneI = card.querySelector("#fPhone");
+    const consI = card.querySelector("#fConsent");
+
+    const errName = card.querySelector("#errName");
+    const errEmail = card.querySelector("#errEmail");
+    const errPhone = card.querySelector("#errPhone");
+    const errCons = card.querySelector("#errConsent");
+
+    // == Validadores ==
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+    function setErr(inputEl, errEl, msg) {
+      if (msg) {
+        errEl.textContent = msg;
+        inputEl && inputEl.classList.add("is-invalid");
+      } else {
+        errEl.textContent = "";
+        inputEl && inputEl.classList.remove("is-invalid");
+      }
+    }
+
+    function validateName() {
+      const v = (nameI.value || "").trim();
+      if (!v) {
+        setErr(nameI, errName, "El nombre es obligatorio.");
+        return false;
+      }
+      if (v.length > 99) {
+        setErr(nameI, errName, "Máximo 99 caracteres.");
+        return false;
+      }
+      setErr(nameI, errName, "");
+      return true;
+    }
+
+    function validateEmail() {
+      const v = (mailI.value || "").trim();
+      if (!v) {
+        setErr(mailI, errEmail, "El email es obligatorio.");
+        return false;
+      }
+      if (!emailRe.test(v)) {
+        setErr(mailI, errEmail, "Introduce un email válido.");
+        return false;
+      }
+      setErr(mailI, errEmail, "");
+      return true;
+    }
+
+    // Solo números; longitud 9–15 (puedes ajustar si quieres)
+    function sanitizePhone() {
+      const digits = (phoneI.value || "").replace(/\D+/g, "");
+      if (phoneI.value !== digits) phoneI.value = digits;
+    }
+    function validatePhone() {
+      sanitizePhone();
+      const v = phoneI.value.trim();
+      if (!v) {
+        setErr(phoneI, errPhone, "El teléfono es obligatorio.");
+        return false;
+      }
+      if (v.length < 9 || v.length > 15) {
+        setErr(phoneI, errPhone, "Debe tener entre 9 y 15 dígitos.");
+        return false;
+      }
+      setErr(phoneI, errPhone, "");
+      return true;
+    }
+
+    function validateConsent() {
+      if (!consI.checked) {
+        setErr(consI, errCons, "Debes aceptar la Política de Privacidad.");
+        return false;
+      }
+      setErr(consI, errCons, "");
+      return true;
+    }
+
+    function validateAll() {
+      const a = validateName();
+      const b = validateEmail();
+      const c = validatePhone();
+      const d = validateConsent();
+      return a && b && c && d;
+    }
+
+    // Live validation
+    nameI.addEventListener("input", validateName);
+    mailI.addEventListener("input", validateEmail);
+    phoneI.addEventListener("input", () => {
+      sanitizePhone();
+      validatePhone();
+    });
+    consI.addEventListener("change", validateConsent);
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!validateAll()) {
+        // Lleva el foco al primer error
+        if (!validateName()) {
+          nameI.focus();
+          return;
+        }
+        if (!validateEmail()) {
+          mailI.focus();
+          return;
+        }
+        if (!validatePhone()) {
+          phoneI.focus();
+          return;
+        }
+        if (!validateConsent()) {
+          consI.focus();
+          return;
+        }
+        return;
+      }
+
+      // OK: cerramos modal y devolvemos datos a onSubmit
+      if (window.QRUI && typeof window.QRUI.close === "function")
+        window.QRUI.close();
+      onSubmit &&
+        onSubmit({
+          name: nameI.value.trim(),
+          email: mailI.value.trim(),
+          phone: phoneI.value.trim(),
+          consent: consI.checked ? "1" : "0",
+        });
+    });
+
+    window.dispatchEvent(new CustomEvent("qr:modal:open"));
   }
 
   /* ===== Pantalla final ===== */
