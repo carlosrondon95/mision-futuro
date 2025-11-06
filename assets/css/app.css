@@ -446,16 +446,33 @@ body {
 }
 
 /* === Errores de validación inline del formulario === */
-.qr-error{
-  color: #d32f2f;       /* rojo legible */
-  font-size: 12px;      /* discreto */
+.qr-error {
+  color: #d32f2f; /* rojo legible */
+  font-size: 12px; /* discreto */
   line-height: 1.3;
-  min-height: 14px;     /* reserva un pequeño hueco, sin desbordar */
+  min-height: 14px; /* reserva un pequeño hueco, sin desbordar */
   margin-top: 4px;
 }
 
-.qr-input.is-invalid{
+.qr-input.is-invalid {
   border-color: #d32f2f;
-  box-shadow: 0 3px 0 #000, 0 0 0 2px rgba(211,47,47,0.15) inset;
+  box-shadow: 0 3px 0 #000, 0 0 0 2px rgba(211, 47, 47, 0.15) inset;
 }
 
+/* ===== Escritorio: ampliar un poco el marco del juego ===== */
+@media (min-width: 1024px) {
+  /* Aumenta el tamaño visual del canvas ~25–30% sin “pasarnos” */
+  #qr-canvas {
+    /* Mantiene proporción 3:1 (960x320), pero más grande */
+    aspect-ratio: 3 / 1;
+    width: clamp(1100px, 78vw, 1280px);
+    height: auto; /* se calcula por aspect-ratio */
+  }
+
+  /* El contenedor acompaña la altura del canvas */
+  #qr-stage.qr-stage {
+    /* El alto del stage crecerá al alto del canvas; no necesitamos calc() aquí */
+    /* Aseguramos que el stage nunca se quede pequeño */
+    min-height: calc((1100px / 3));
+  }
+}

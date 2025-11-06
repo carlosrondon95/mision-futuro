@@ -6,7 +6,65 @@
   const padEl = document.getElementById("qr-pad");
   if (!canvas || !stage || !appRoot) return;
 
-  // Detección robusta de móvil
+  // URL base desde PHP
+  const BASE =
+    window.qrAjax && qrAjax.base_url
+      ? qrAjax.base_url.endsWith("/")
+        ? qrAjax.base_url
+        : qrAjax.base_url + "/"
+      : "/";
+
+  // ===== Helpers de carga =====
+  function loadImage(src) {
+    return new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => res(img);
+      img.onerror = () => {
+        console.error("[QuizRunner] No se pudo cargar:", src);
+        rej(new Error("Image load error: " + src));
+      };
+      img.src = src;
+    });
+  }
+
+  async function preloadHero(gender) {
+    const dir = `${BASE}assets/img/${gender}/`;
+    const [idle, stepR, stepL, jump] = await Promise.all([
+      loadImage(`${dir}${gender}.png`),
+      loadImage(`${dir}${gender}-pasoderecho.png`),
+      loadImage(`${dir}${gender}-pasoizquierdo.png`),
+      loadImage(`${dir}${gender}-salto.png`),
+    ]);
+    return { idle, stepR, stepL, jump };
+  }
+  async function preloadBg() {
+    return await loadImage(`${BASE}assets/img/fondo.png`);
+  }
+  async function preloadDoor() {
+    return await loadImage(`${BASE}assets/img/puerta.png`);
+  }
+  async function preloadCopa() {
+    return await loadImage(`${BASE}assets/img/copa.png`);
+  }
+  async function preloadObstacle() {
+    return await loadImage(`${BASE}assets/img/obstaculo.png`);
+  }
+  async function preloadDecos() {
+    const dir = `${BASE}assets/img/deco/`;
+    const keys = {
+      cometa: "cometa.png",
+      marciano: "marciano.png",
+      nave: "nave-espacial.png",
+      pajaro1: "pajaro-1.png",
+      pajaro2: "pajaro-2.png",
+    };
+    const entries = await Promise.all(
+      Object.entries(keys).map(async ([k, f]) => [k, await loadImage(dir + f)])
+    );
+    return Object.fromEntries(entries);
+  }
+
+  // ===== Detección móvil =====
   const isMobile = (function () {
     const ua = (
       navigator.userAgent ||
@@ -28,55 +86,75 @@
   if (isMobile) document.body.classList.add("is-mobile");
   else document.body.classList.remove("is-mobile");
 
-  // Instancias
-  let viewport = null;
-  let virtualPad = null;
-  let fsMgr = null;
+  let viewport = null,
+    virtualPad = null,
+    fsMgr = null;
   const padState = { left: false, right: false };
 
-  if (isMobile) {
-    viewport = new QRViewport(canvas, stage, padEl);
-    virtualPad = new VirtualPad({
-      onJump: () => {
-        if (game) game.queueJump();
-      },
-    });
-    fsMgr = new QRFS(appRoot, stage, padEl);
+  // (Escritorio: dejamos tamaño al CSS/JS que ya tengas. Si quieres, luego reajustamos.)
 
-    // Leer estado de botones (clases) para el juego
-    const btnL = document.getElementById("qr-pad-left");
-    const btnR = document.getElementById("qr-pad-right");
-    (function loopPad() {
-      padState.left = btnL && btnL.classList.contains("qr-pad__btn--pressed");
-      padState.right = btnR && btnR.classList.contains("qr-pad__btn--pressed");
-      requestAnimationFrame(loopPad);
-    })();
-  } else {
-    // Escritorio
-    stage.classList.remove("qr-stage--mobile");
-    if (padEl) {
-      padEl.hidden = true;
-      padEl.setAttribute("aria-hidden", "true");
-    }
-    canvas.style.width = "";
-    canvas.style.height = "";
-    stage.style.height = "";
-    stage.style.minHeight = "";
-  }
-
-  // Juego
-  const game = new QRGame(
-    canvas,
-    hudBadge,
-    {},
-    isMobile ? padState : { left: false, right: false }
-  );
-
-  // Menú de inicio: en móvil primero FS (y bloqueo a landscape), luego arrancamos
+  // ===== Flujo: start -> (FS si móvil) -> selectHero -> precarga -> crear juego -> start =====
   window.QRUI.startModal(async () => {
-    if (isMobile && fsMgr) {
-      await fsMgr.enter(); // aquí se intenta bloquear a landscape
+    if (isMobile) {
+      viewport = new QRViewport(canvas, stage, padEl);
+      virtualPad = new VirtualPad({
+        onJump: () => {
+          if (window.game) window.game.queueJump();
+        },
+      });
+      fsMgr = new QRFS(appRoot, stage, padEl);
+      await fsMgr.enter();
+
+      const btnL = document.getElementById("qr-pad-left");
+      const btnR = document.getElementById("qr-pad-right");
+      (function loopPad() {
+        padState.left = btnL && btnL.classList.contains("qr-pad__btn--pressed");
+        padState.right =
+          btnR && btnR.classList.contains("qr-pad__btn--pressed");
+        requestAnimationFrame(loopPad);
+      })();
+    } else {
+      stage.classList.remove("qr-stage--mobile");
+      if (padEl) {
+        padEl.hidden = true;
+        padEl.setAttribute("aria-hidden", "true");
+      }
     }
-    game.start();
+
+    // Selección de personaje
+    QRUI.selectHeroModal(async (gender) => {
+      try {
+        const [heroSprites, fondo, puerta, copa, obstaculo, deco] =
+          await Promise.all([
+            preloadHero(gender),
+            preloadBg(),
+            preloadDoor(),
+            preloadCopa(),
+            preloadObstacle(),
+            preloadDecos(),
+          ]);
+
+        const assets = {
+          hero: heroSprites,
+          fondo,
+          puerta,
+          copa,
+          obstaculo,
+          deco,
+        };
+        window.game = new QRGame(
+          canvas,
+          hudBadge,
+          assets,
+          isMobile ? padState : { left: false, right: false }
+        );
+        window.game.start();
+      } catch (e) {
+        console.error(e);
+        alert(
+          "No se han podido cargar algunas imágenes. Revisa rutas y nombres en /assets/img/."
+        );
+      }
+    });
   });
 })();

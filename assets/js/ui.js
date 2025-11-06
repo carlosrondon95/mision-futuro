@@ -86,6 +86,36 @@
     emit("qr:modal:open");
   }
 
+  /* ===== Modal de selección de personaje ===== */
+  function selectHeroModal(onSelect) {
+    if (document.querySelector(".qr-modal")) return;
+    const modal = document.createElement("div");
+    modal.className = "qr-modal";
+
+    const card = document.createElement("div");
+    card.className = "qr-card";
+    card.innerHTML = `
+      <h3 class="qr-title">Elige tu personaje</h3>
+      <div class="qr-opts">
+        <button class="qr-opt" id="pickMale">Hombre</button>
+        <button class="qr-opt" id="pickFemale">Mujer</button>
+      </div>
+    `;
+    modal.appendChild(card);
+    root.appendChild(modal);
+
+    card.querySelector("#pickMale").addEventListener("click", () => {
+      close();
+      onSelect && onSelect("hombre");
+    });
+    card.querySelector("#pickFemale").addEventListener("click", () => {
+      close();
+      onSelect && onSelect("mujer");
+    });
+
+    emit("qr:modal:open");
+  }
+
   /* ===== Modal de pregunta ===== */
   function questionModal(qObj, onAnswer) {
     if (document.querySelector(".qr-modal")) return;
@@ -116,7 +146,6 @@
     emit("qr:modal:open");
   }
 
-  /* ===== Modal de formulario ===== */
   /* ===== Modal de formulario (con validación inline) ===== */
   function formModal(onSubmit) {
     if (document.querySelector(".qr-modal")) return;
@@ -158,10 +187,10 @@
   `;
 
     modal.appendChild(card);
-    const root =
+    const root2 =
       document.querySelector("#qr-app #qr-modal-root") ||
       document.getElementById("qr-modal-root");
-    root.appendChild(modal);
+    root2.appendChild(modal);
 
     const form = card.querySelector("#qrLeadForm");
     const nameI = card.querySelector("#fName");
@@ -215,43 +244,32 @@
       return true;
     }
 
-    // Solo números; longitud 9–15 (puedes ajustar si quieres)
     function sanitizePhone() {
-      // Permite solo dígitos y el signo + al inicio
       let v = phoneI.value.replace(/[^\d+]/g, "");
-      // Solo un '+' y solo al principio
-      if (v.includes("+")) {
+      if (v.includes("+"))
         v = "+" + v.replace(/[+]/g, "").replace(/[^\d]/g, "");
-      }
       phoneI.value = v;
     }
 
     function validatePhone() {
       sanitizePhone();
       const v = phoneI.value.trim();
-
       if (!v) {
         setErr(phoneI, errPhone, "El teléfono es obligatorio.");
         return false;
       }
-
-      // Detectar si tiene prefijo internacional
       const isIntl = v.startsWith("+");
-
-      // España (sin +34)
       if (!isIntl) {
         if (!/^\d{9}$/.test(v)) {
           setErr(phoneI, errPhone, "Debe tener 9 dígitos si es español.");
           return false;
         }
       } else {
-        // Internacional: + y al menos 8 dígitos tras el prefijo
         if (!/^\+\d{8,15}$/.test(v)) {
           setErr(phoneI, errPhone, "Formato internacional no válido (+XX...).");
           return false;
         }
       }
-
       setErr(phoneI, errPhone, "");
       return true;
     }
@@ -285,7 +303,6 @@
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       if (!validateAll()) {
-        // Lleva el foco al primer error
         if (!validateName()) {
           nameI.focus();
           return;
@@ -305,7 +322,6 @@
         return;
       }
 
-      // OK: cerramos modal y devolvemos datos a onSubmit
       if (window.QRUI && typeof window.QRUI.close === "function")
         window.QRUI.close();
       onSubmit &&
@@ -351,15 +367,12 @@
     emit("qr:modal:open");
   }
 
-  // Helpers
-  function val(sel) {
-    const n = document.querySelector(sel);
-    return n ? n.value.trim() : "";
-  }
-  function checked(sel) {
-    const n = document.querySelector(sel);
-    return !!(n && n.checked);
-  }
-
-  window.QRUI = { startModal, questionModal, formModal, endingModal, close };
+  window.QRUI = {
+    startModal,
+    questionModal,
+    formModal,
+    endingModal,
+    selectHeroModal,
+    close,
+  };
 })();

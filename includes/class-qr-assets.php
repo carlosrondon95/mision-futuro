@@ -11,17 +11,18 @@ class QR_Assets
 
   public function enqueue()
   {
+    // Carga sólo en la(s) página(s) que tenga(n) el shortcode [quiz_runner]
     if (!is_singular() || !has_shortcode(get_post_field('post_content', get_the_ID()), 'quiz_runner')) {
       return;
     }
 
-    // Versión por fichero: fuerza recarga cuando cambias un asset.
+    // Versión por fichero: fuerza recarga al modificar assets
     $ver = function ($relPath) {
       $path = QR_PLUGIN_DIR . ltrim($relPath, '/');
       return file_exists($path) ? (string) filemtime($path) : (string) time();
     };
 
-    // CSS
+    // ===== CSS
     wp_enqueue_style(
       'qr-app',
       QR_PLUGIN_URL . 'assets/css/app.css',
@@ -29,7 +30,7 @@ class QR_Assets
       $ver('assets/css/app.css')
     );
 
-    // JS vendor
+    // ===== JS vendor / núcleo
     wp_enqueue_script(
       'qr-microloop',
       QR_PLUGIN_URL . 'assets/js/vendor/microloop.js',
@@ -38,7 +39,7 @@ class QR_Assets
       true
     );
 
-    // UI/Data
+    // Datos + UI
     wp_enqueue_script(
       'qr-data',
       QR_PLUGIN_URL . 'assets/js/data.js',
@@ -46,6 +47,7 @@ class QR_Assets
       $ver('assets/js/data.js'),
       true
     );
+
     wp_enqueue_script(
       'qr-ui',
       QR_PLUGIN_URL . 'assets/js/ui.js',
@@ -62,6 +64,7 @@ class QR_Assets
       $ver('assets/js/viewport.js'),
       true
     );
+
     wp_enqueue_script(
       'qr-virtualpad',
       QR_PLUGIN_URL . 'assets/js/virtualpad.js',
@@ -69,6 +72,7 @@ class QR_Assets
       $ver('assets/js/virtualpad.js'),
       true
     );
+
     wp_enqueue_script(
       'qr-fs',
       QR_PLUGIN_URL . 'assets/js/fs.js',
@@ -77,7 +81,7 @@ class QR_Assets
       true
     );
 
-    // Game + Bootstrap
+    // Juego
     wp_enqueue_script(
       'qr-game',
       QR_PLUGIN_URL . 'assets/js/game.js',
@@ -85,6 +89,8 @@ class QR_Assets
       $ver('assets/js/game.js'),
       true
     );
+
+    // Bootstrap (arranque) — depende de game y fs
     wp_enqueue_script(
       'qr-bootstrap',
       QR_PLUGIN_URL . 'assets/js/bootstrap.js',
@@ -93,11 +99,13 @@ class QR_Assets
       true
     );
 
-    // Datos para AJAX/branding
+    // Datos globales para JS
     wp_localize_script('qr-bootstrap', 'qrAjax', [
       'ajax_url' => admin_url('admin-ajax.php'),
       'nonce' => wp_create_nonce(QR_Ajax::NONCE),
       'brand' => ['primary' => '#d09e55', 'font' => 'Poppins'],
+      // 👇 MUY IMPORTANTE: base_url para encontrar /assets/img sin hardcodear carpeta
+      'base_url' => QR_PLUGIN_URL,
     ]);
   }
 }
