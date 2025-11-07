@@ -15,6 +15,10 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const rand = (min, max) => Math.random() * (max - min) + min;
 
+  // 🧱 Config fáciles de tocar
+  const WALL_GAP = 1200; // distancia de las murallas respecto a Puerta 1 / Trofeo
+  const TOWER_BLOCKS = 14; // altura (en bloques) de las murallas verticales
+
   class QRGame {
     constructor(canvas, hudBadge, assets, pad) {
       this.cv = canvas;
@@ -65,6 +69,10 @@
       this.anim = { facing: 1, walkTimer: 0, frameDur: 0.12 };
       this.camX = 0;
 
+      // Se definirán tras crear obstáculos (porque dependen del ancho del bloque)
+      this.worldMinX = -Infinity;
+      this.worldMaxX = +Infinity;
+
       this.obstacles = this.createObstacles();
       this.flyers = [];
       this.flyTimer = 0;
@@ -78,16 +86,18 @@
         const code = e.code || e.key;
         const isScrollKey =
           code === "Space" ||
+          code === "Spacebar" ||
           code === "ArrowUp" ||
           code === "ArrowDown" ||
-          e.key === " " ||
-          code === "Spacebar";
+          e.key === " ";
 
-        // Si hay modal o input bloqueado, ignoramos
+        // ✅ Evita scroll SIEMPRE que no estés escribiendo, aunque haya modal
+        if (isScrollKey && !this.isTypingTarget(e.target)) e.preventDefault();
+
+        // Si hay modal o input bloqueado, no procesamos acciones del juego
         if (document.querySelector(".qr-modal")) return;
         if (this.isInputLocked()) return;
 
-        if (isScrollKey && !this.isTypingTarget(e.target)) e.preventDefault();
         if (code === "Space" || code === "ArrowUp" || code === "KeyW")
           this.queueJump();
       };
@@ -155,6 +165,7 @@
       const baseW = Math.max(16, Math.round(img.width * scaleBase));
       const stepW = Math.max(16, Math.round(img.width * scaleStep));
 
+      // Obstáculos normales entre puertas (aleatorios)
       for (let i = 0; i < this.stations - 1; i++) {
         if (i === 0 && Math.random() < 0.4) continue;
         if (Math.random() < 0.7) {
@@ -182,6 +193,28 @@
           }
         }
       }
+
+      // 🚧 Murallas verticales (mucho más altas y más lejos)
+      const leftX = this.portalX[0] - WALL_GAP;
+      const rightX = this.portalX[this.stations - 1] + WALL_GAP;
+
+      const pushVerticalTower = (x) => {
+        for (let i = 0; i < TOWER_BLOCKS; i++) {
+          list.push({
+            x,
+            w: baseW,
+            h: baseH,
+            yBottom: this.footY - i * baseH, // pila vertical
+          });
+        }
+      };
+      pushVerticalTower(leftX);
+      pushVerticalTower(rightX);
+
+      // ⛔ Define límites duros del mundo alineados con las murallas
+      this.worldMinX = leftX; // el centro del héroe no puede pasar de aquí
+      this.worldMaxX = rightX;
+
       return list;
     }
 
@@ -339,6 +372,9 @@
 
       this.hero.x += this.hero.dx;
 
+      // ✅ Clamp duro de límites del mundo (alineados con murallas)
+      this.hero.x = clamp(this.hero.x, this.worldMinX, this.worldMaxX);
+
       if (!this.isInputLocked() && this.jumpBufferT > 0) {
         if (this.tryJump()) this.jumpBufferT = 0;
       } else {
@@ -378,8 +414,10 @@
         this.lockInput(700);
 
         const qObj = QUESTIONS[this.step];
+        const isLast =
+          this.step === this.stations - 1 || (qObj && qObj.id === "form");
 
-        // 🎵 SFX al llegar a CUALQUIER puerta (incluida la 8/formulario): puerta.mp3
+        // 🎵 Al llegar a una puerta suena "puerta", incluso en la última (formulario)
         if (window.QRAudio) {
           window.QRAudio.playDoor();
         }
@@ -420,7 +458,9 @@
                 this.start();
                 return;
               }
-              // ✅ Formulario completado correctamente ⇒ victoria.mp3
+
+              // 🎵 Victoria SOLO al completar el formulario con éxito
+              if (window.QRAudio) window.QRAudio.playVictory();
               this.finish();
             } catch {
               alert("Error de red. Inténtalo de nuevo.");
@@ -504,9 +544,6 @@
     }
 
     finish() {
-      // 🎵 Victoria al finalizar (tras enviar formulario OK)
-      if (window.QRAudio) window.QRAudio.playVictory();
-
       const win = winner(this.score);
       endingModal(
         { top1: win.top1, top2: win.top2, bullets: bullets(win.top1) },
@@ -633,6 +670,7 @@
         }
       }
 
+      // Sombra del héroe
       {
         const lift = Math.max(0, yBottom - this.hero.y);
         const maxLift = 120;

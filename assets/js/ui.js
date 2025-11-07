@@ -1,6 +1,6 @@
 // assets/js/ui.js
 (function () {
-  // ⬅️ Ahora el modal cuelga de #qr-stage para quedar dentro de la ventana de juego
+  // ⬅️ El modal cuelga de #qr-stage para quedar dentro de la ventana de juego
   let root = document.querySelector("#qr-stage #qr-modal-root");
   if (!root) {
     const stage = document.getElementById("qr-stage");
@@ -20,6 +20,36 @@
   function isMobile() {
     return document.body.classList.contains("is-mobile");
   }
+  function isTypingTarget(el) {
+    if (!el) return false;
+    const t = (el.tagName || "").toLowerCase();
+    return (
+      t === "input" ||
+      t === "textarea" ||
+      t === "select" ||
+      el.isContentEditable === true
+    );
+  }
+
+  /* ✅ Bloqueo de scroll con ESPACIO dentro de la app (captura global y no molesta a inputs) */
+  (function installSpaceScrollGuard() {
+    const app = document.getElementById("qr-app");
+    const handler = (e) => {
+      const code = e.code || e.key;
+      const isSpace = code === "Space" || code === "Spacebar" || e.key === " ";
+      if (!isSpace) return;
+      if (isTypingTarget(e.target)) return; // permitir escribir en inputs
+      const insideApp = !!(app && app.contains(e.target));
+      const modalOpen = !!document.querySelector("#qr-stage .qr-modal");
+      if (insideApp || modalOpen) {
+        e.preventDefault(); // evita el scroll de la página
+      }
+    };
+    document.addEventListener("keydown", handler, {
+      passive: false,
+      capture: true,
+    });
+  })();
 
   /* ===== Menú de inicio ===== */
   function startModal(onPlay) {
@@ -183,6 +213,7 @@
   function formModal(onSubmit) {
     if (document.querySelector(".qr-modal")) return;
 
+    // (… mantiene el mismo formulario compacto que ya tenías …)
     // === Inyecta estilos compactos específicos del formulario ===
     if (!document.getElementById("qr-form-compact-css")) {
       const css = `
@@ -261,7 +292,7 @@
       document.getElementById("qr-modal-root");
     rootNode.appendChild(modal);
 
-    // === Validación (igual que tu versión previa) ===
+    // (… validación igual que ya tenías …)
     const form = card.querySelector("#qrLeadForm");
     const nameI = card.querySelector("#fName");
     const mailI = card.querySelector("#fEmail");
@@ -375,13 +406,14 @@
         });
     });
 
-    /* === Scale-to-fit centrado dentro de la Stage === */
     function getStageHeight() {
       const stage = document.getElementById("qr-stage");
       return stage ? stage.clientHeight : window.innerHeight;
     }
     function fitCardHeight() {
-      const avail = getStageHeight() - 16; // margen interno
+      const card = document.querySelector(".qr-form--compact");
+      if (!card) return;
+      const avail = getStageHeight() - 16;
       card.style.transform = "";
       card.style.transformOrigin = "center center";
       card.style.willChange = "transform";
