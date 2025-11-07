@@ -378,13 +378,10 @@
         this.lockInput(700);
 
         const qObj = QUESTIONS[this.step];
-        const isLast =
-          this.step === this.stations - 1 || (qObj && qObj.id === "form");
 
-        // SFX puerta / victoria
+        // 🎵 SFX al llegar a CUALQUIER puerta (incluida la 8/formulario): puerta.mp3
         if (window.QRAudio) {
-          if (isLast) window.QRAudio.playVictory();
-          else window.QRAudio.playDoor();
+          window.QRAudio.playDoor();
         }
 
         if (qObj.id === "form") {
@@ -423,6 +420,7 @@
                 this.start();
                 return;
               }
+              // ✅ Formulario completado correctamente ⇒ victoria.mp3
               this.finish();
             } catch {
               alert("Error de red. Inténtalo de nuevo.");
@@ -506,6 +504,9 @@
     }
 
     finish() {
+      // 🎵 Victoria al finalizar (tras enviar formulario OK)
+      if (window.QRAudio) window.QRAudio.playVictory();
+
       const win = winner(this.score);
       endingModal(
         { top1: win.top1, top2: win.top2, bullets: bullets(win.top1) },

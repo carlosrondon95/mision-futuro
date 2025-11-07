@@ -1,12 +1,12 @@
 // assets/js/ui.js
 (function () {
-  // El modal debe colgar de #qr-app para ser visible en Fullscreen
-  let root = document.querySelector("#qr-app #qr-modal-root");
+  // ⬅️ Ahora el modal cuelga de #qr-stage para quedar dentro de la ventana de juego
+  let root = document.querySelector("#qr-stage #qr-modal-root");
   if (!root) {
-    const app = document.getElementById("qr-app");
+    const stage = document.getElementById("qr-stage");
     root = document.createElement("div");
     root.id = "qr-modal-root";
-    if (app) app.appendChild(root);
+    if (stage) stage.appendChild(root);
   }
 
   function emit(name) {
@@ -110,7 +110,12 @@
     modal.appendChild(card);
     root.appendChild(modal);
 
+    // 🎵 Sonido al abrir la selección de personaje
+    if (window.QRAudio) window.QRAudio.playDoor();
+
     const pick = (g) => {
+      // 🎵 Sonido al seleccionar personaje
+      if (window.QRAudio) window.QRAudio.playAnswer();
       close();
       onSelect && onSelect(g);
     };
@@ -161,6 +166,7 @@
       b.className = "qr-opt";
       b.textContent = op;
       b.addEventListener("click", () => {
+        // SFX respuesta
         if (window.QRAudio) window.QRAudio.playAnswer();
         close();
         onAnswer && onAnswer(op);
@@ -180,47 +186,28 @@
     // === Inyecta estilos compactos específicos del formulario ===
     if (!document.getElementById("qr-form-compact-css")) {
       const css = `
-      /* Ocultar visualmente, accesible */
       .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,1px,1px);white-space:nowrap;border:0}
-
-      /* Modal centrado SIEMPRE */
       .qr-modal{align-items:center!important;justify-content:center!important;padding:8px}
-
-      /* Card compacto */
       .qr-form--compact{
         width:min(500px,92vw);
         padding:10px;
         border-width:4px!important; outline-width:4px!important;
         box-shadow:0 0 0 4px var(--gray-dark),0 6px 0 var(--black)!important;
         max-height:calc((var(--vh,1dvh)*100) - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-        overflow:visible; /* el ajuste se hace con scale-to-fit */
+        overflow:visible;
       }
       .qr-form--compact .qr-title{font-size:14px;margin:4px 0 6px}
       .qr-form--compact .qr-row{margin:6px 0;gap:3px}
       .qr-form--compact .qr-input{padding:8px 10px;font-size:13px}
-
-      /* Reserva fija para errores (sin “saltos”) */
       .qr-form--compact .qr-error{
-        color:#d32f2f;
-        font-size:11px;
-        line-height:1.2;
-        height:14px;             /* espacio fijo 1 línea */
-        white-space:nowrap;      /* no envolver */
-        overflow:hidden;         /* ocultar exceso */
-        text-overflow:ellipsis;  /* puntos suspensivos si se pasa */
+        color:#d32f2f;font-size:11px;line-height:1.2;height:14px;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
       }
-
       .qr-form--compact .qr-btn{padding:9px 12px;font-size:13px}
       .qr-form--compact .qr-consent{font-size:12px}
-
-      /* Dos columnas para ganar altura */
       .qr-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
       @media (max-width:360px){ .qr-grid-2{grid-template-columns:1fr;gap:6px} }
-
-      /* Pie pegajoso (por si hubiera scroll en pantallas extremas) */
       .qr-form-actions{position:sticky;bottom:0;background:#fff;padding-top:8px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
-
-      /* En fullscreen un poco más estrecho */
       #qr-app.qr-app--fs .qr-form--compact{width:min(480px,92vw)}
       `;
       const st = document.createElement("style");
@@ -238,7 +225,6 @@
       <form id="qrLeadForm" novalidate>
         <h3 class="qr-title">📩 Tus datos</h3>
 
-        <!-- 2 columnas: Nombre + Teléfono -->
         <div class="qr-grid-2">
           <div class="qr-row">
             <label for="fName" class="sr-only">Nombre</label>
@@ -252,7 +238,6 @@
           </div>
         </div>
 
-        <!-- Email ocupa todo el ancho -->
         <div class="qr-row">
           <label for="fEmail" class="sr-only">Email</label>
           <input class="qr-input" id="fEmail" type="email" placeholder="Email" autocomplete="email" inputmode="email">
@@ -272,7 +257,7 @@
 
     modal.appendChild(card);
     const rootNode =
-      document.querySelector("#qr-app #qr-modal-root") ||
+      document.querySelector("#qr-stage #qr-modal-root") ||
       document.getElementById("qr-modal-root");
     rootNode.appendChild(modal);
 
@@ -296,7 +281,7 @@
         errEl.textContent = "";
         inputEl && inputEl.classList.remove("is-invalid");
       }
-      requestAnimationFrame(fitCardHeight); // re-ajusta si cambia el alto (aunque ahora es fijo)
+      requestAnimationFrame(fitCardHeight);
     }
     function validateName() {
       const v = (nameI.value || "").trim();
@@ -352,7 +337,6 @@
       return a && b && c && d;
     }
 
-    // Live validation + refit
     const refit = () => requestAnimationFrame(fitCardHeight);
     nameI.addEventListener("input", () => {
       validateName();
@@ -391,19 +375,16 @@
         });
     });
 
-    // === Scale-to-fit centrado: que SIEMPRE quepa y quede centrado ===
-    function getVH() {
-      const vv = window.visualViewport;
-      return vv && vv.height ? vv.height : window.innerHeight;
+    /* === Scale-to-fit centrado dentro de la Stage === */
+    function getStageHeight() {
+      const stage = document.getElementById("qr-stage");
+      return stage ? stage.clientHeight : window.innerHeight;
     }
     function fitCardHeight() {
-      // Altura disponible (modal ya centra verticalmente)
-      const avail = getVH() - 16; // 8px margen arriba/abajo
-      // Reset
+      const avail = getStageHeight() - 16; // margen interno
       card.style.transform = "";
-      card.style.transformOrigin = "center center"; // centrado real
+      card.style.transformOrigin = "center center";
       card.style.willChange = "transform";
-      // Medida real
       const rect = card.getBoundingClientRect();
       const scale = Math.min(1, Math.max(0.82, avail / rect.height));
       if (scale < 1) {
@@ -411,21 +392,17 @@
       }
     }
 
-    // Ajustar al abrir y al cambiar viewport/teclado/orientación
-    const vv = window.visualViewport;
     const onResize = () => fitCardHeight();
     window.addEventListener("resize", onResize);
     window.addEventListener("orientationchange", onResize);
-    vv && vv.addEventListener("resize", onResize);
-    // Limpieza al cerrar
+    window.addEventListener("qr:viewport:change", onResize);
     const cleanup = () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
-      vv && vv.removeEventListener("resize", onResize);
+      window.removeEventListener("qr:viewport:change", onResize);
     };
     window.addEventListener("qr:modal:close", cleanup, { once: true });
 
-    // Primer ajuste
     requestAnimationFrame(fitCardHeight);
 
     emit("qr:modal:open");

@@ -90,6 +90,7 @@
   if (isMobile) document.body.classList.add("is-mobile");
   else document.body.classList.remove("is-mobile");
 
+  /* ✅ Tamaño de Stage también ANTES de pulsar "Jugar" (escritorio) */
   function applyDesktopWide() {
     const vw = Math.max(
       document.documentElement.clientWidth,
@@ -106,13 +107,24 @@
     appRoot.classList.add("qr-wide");
   }
 
+  // ⬅️ Aplica tamaño inicial en escritorio
+  if (!isMobile) {
+    stage.classList.remove("qr-stage--mobile");
+    if (padEl) {
+      padEl.hidden = true;
+      padEl.setAttribute("aria-hidden", "true");
+    }
+    applyDesktopWide();
+    window.addEventListener("resize", applyDesktopWide);
+  }
+
   let viewport = null,
     virtualPad = null,
     fsMgr = null;
   const padState = { left: false, right: false };
 
   window.QRUI.startModal(async () => {
-    // 🔊 Audio: inicializa y lanza música tras el clic en "Jugar"
+    // 🔊 Audio al arrancar tras gesto del usuario
     if (window.QRAudio) {
       try {
         window.QRAudio.init(BASE);
@@ -146,13 +158,12 @@
         requestAnimationFrame(loopPad);
       })();
     } else {
+      // En escritorio ya hemos aplicado el tamaño inicial, solo aseguramos estado
       stage.classList.remove("qr-stage--mobile");
       if (padEl) {
         padEl.hidden = true;
         padEl.setAttribute("aria-hidden", "true");
       }
-      applyDesktopWide();
-      window.addEventListener("resize", applyDesktopWide);
     }
 
     const malePreview = `${BASE}assets/img/hombre/hombre.png`;

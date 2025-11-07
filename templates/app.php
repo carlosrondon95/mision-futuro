@@ -11,6 +11,8 @@
   <!-- Stage -->
   <div id="qr-stage" class="qr-stage">
     <canvas id="qr-canvas" width="960" height="320"></canvas>
+    <!-- ⬇️ AHORA el root de modales está DENTRO de la Stage -->
+    <div id="qr-modal-root"></div>
   </div>
 
   <!-- Honeypot invisible para bots -->
@@ -38,7 +40,4 @@
         continuar.</div>
     </div>
   </div>
-
-  <!-- ⬇️ MOVIDO AQUÍ: el modal root debe ser DESCENDIENTE de #qr-app para verse en fullscreen -->
-  <div id="qr-modal-root"></div>
 </div>
