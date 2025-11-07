@@ -79,7 +79,7 @@
       </ul>`;
 
     card.innerHTML = `
-      <h3 class="qr-title">🎮 Quiz Versus</h3>
+      <h3 class="qr-title">🎮 Misión Futuro</h3>
       <p class="qr-lead"><strong>Tu futuro empieza hoy.</strong></p>
       ${mobile ? mobileList : desktopList}
       <div class="qr-start-actions">
@@ -213,8 +213,7 @@
   function formModal(onSubmit) {
     if (document.querySelector(".qr-modal")) return;
 
-    // (… mantiene el mismo formulario compacto que ya tenías …)
-    // === Inyecta estilos compactos específicos del formulario ===
+    // === Inyecta estilos compactos específicos del formulario (incluye estilo del link azul/subrayado) ===
     if (!document.getElementById("qr-form-compact-css")) {
       const css = `
       .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,1px,1px);white-space:nowrap;border:0}
@@ -240,6 +239,8 @@
       @media (max-width:360px){ .qr-grid-2{grid-template-columns:1fr;gap:6px} }
       .qr-form-actions{position:sticky;bottom:0;background:#fff;padding-top:8px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
       #qr-app.qr-app--fs .qr-form--compact{width:min(480px,92vw)}
+      .qr-link{color:#1976d2;text-decoration:underline;font-weight:600}
+      .qr-link:focus,.qr-link:hover{text-decoration:underline}
       `;
       const st = document.createElement("style");
       st.id = "qr-form-compact-css";
@@ -276,7 +277,10 @@
         </div>
 
         <div class="qr-row qr-consent">
-          <label><input id="fConsent" type="checkbox"> Acepto la Política de Privacidad</label>
+          <label for="fConsent">
+            <input id="fConsent" type="checkbox">
+            Acepto la <a id="policyLink" class="qr-link" href="https://versuselearning.com/politica-de-privacidad/" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
+          </label>
           <div class="qr-error" id="errConsent"></div>
         </div>
 
@@ -292,7 +296,15 @@
       document.getElementById("qr-modal-root");
     rootNode.appendChild(modal);
 
-    // (… validación igual que ya tenías …)
+    // Evitar que el click en el enlace marque/desmarque el checkbox
+    const policyLink = card.querySelector("#policyLink");
+    if (policyLink) {
+      policyLink.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+    }
+
+    // === Validación (igual que antes) ===
     const form = card.querySelector("#qrLeadForm");
     const nameI = card.querySelector("#fName");
     const mailI = card.querySelector("#fEmail");
