@@ -472,16 +472,16 @@ body {
 }
 
 .qr-card--form {
-  width: 640px;
-  max-width: 90vw;
-  height: auto; /* sin altura fija */
-  /* FIX: que nunca se corte; scroll interno si hace falta */
+  width: min(640px, 92vw);
+  height: auto;
+  /* Alto máximo usando viewport estable (--vh). Fallback a 1dvh si faltase. */
   max-height: calc(
-    100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+    (var(--vh, 1dvh) * 100) - 24px - env(safe-area-inset-top) -
+      env(safe-area-inset-bottom)
   );
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* alinear arriba para que quepa todo */
+  justify-content: flex-start;
   align-items: stretch;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
@@ -672,5 +672,102 @@ body {
     width: 100% !important;
     height: auto;
     aspect-ratio: 3 / 1;
+  }
+
+  /* Ocultar visualmente pero conservar accesibilidad */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 1px, 1px);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Modo compacto del form */
+  .qr-form--compact {
+    width: min(520px, 92vw);
+    padding: 12px;
+    /* Alto máximo usando viewport estable (--vh) */
+    max-height: calc(
+      (var(--vh, 1dvh) * 100) - 12px - env(safe-area-inset-top) -
+        env(safe-area-inset-bottom)
+    );
+    overflow: auto;
+  }
+
+  /* Tipos/paddings reducidos */
+  .qr-form--compact .qr-title {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  .qr-form--compact .qr-row {
+    margin: 4px 0;
+    gap: 3px;
+  }
+  .qr-form--compact .qr-input {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .qr-form--compact .qr-error {
+    font-size: 11px;
+    min-height: 12px;
+  }
+  .qr-form--compact .qr-btn {
+    padding: 9px 12px;
+    font-size: 13px;
+  }
+
+  /* Grid de dos columnas para ganar altura */
+  .qr-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (max-width: 360px) {
+    .qr-grid-2 {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+
+  /* Consent más compacto */
+  .qr-form--compact .qr-consent {
+    font-size: 12px;
+  }
+
+  /* Botón fijo al fondo del card (si hubiera algo de scroll, siempre visible) */
+  .qr-form-actions {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding-top: 8px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  }
+
+  /* En fullscreen, un pelín más estrecho para asegurar quepa en móviles pequeños */
+  #qr-app.qr-app--fs .qr-form--compact {
+    width: min(500px, 92vw);
+  }
+
+  /* Último recurso para alturas MUY bajas: reduce un poco más */
+  @media (max-height: 560px) {
+    .qr-form--compact {
+      padding: 10px;
+    }
+    .qr-form--compact .qr-title {
+      font-size: 13px;
+    }
+    .qr-form--compact .qr-input {
+      padding: 7px 9px;
+      font-size: 12.5px;
+    }
+    .qr-form--compact .qr-btn {
+      padding: 8px 11px;
+      font-size: 12.5px;
+    }
   }
 }

@@ -27,12 +27,12 @@
 
       // 🎵 Música
       this.music.musica = make(M + "musica.mp3", true, 0.5);
-      this.music.victoria = make(M + "victoria.mp3", false, 0.9);
+      this.music.victoria = make(M + "victoria.mp3", false, 0.6);
 
       // 🔔 SFX
-      this.sfx.puerta = make(S + "puerta.mp3", false, 0.85);
-      this.sfx.respuesta = make(S + "respuesta.mp3", false, 0.85);
-      this.sfx.salto = make(S + "salto.mp3", false, 0.85);
+      this.sfx.puerta = make(S + "puerta.mp3", false, 1);
+      this.sfx.respuesta = make(S + "respuesta.mp3", false, 0.7);
+      this.sfx.salto = make(S + "salto.mp3", false, 0.4);
 
       document.addEventListener(
         "visibilitychange",

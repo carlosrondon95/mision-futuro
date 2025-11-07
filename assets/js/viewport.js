@@ -1,3 +1,4 @@
+// assets/js/viewport.js
 (function () {
   class QRViewport {
     constructor(canvas, stage, pad) {
@@ -35,6 +36,9 @@
         window.visualViewport && window.visualViewport.height
           ? window.visualViewport.height
           : window.innerHeight;
+
+      // 1% del alto visible real del viewport (estable con barras/teclado)
+      document.documentElement.style.setProperty("--vh", vh * 0.01 + "px");
 
       // En FS-portrait restamos la barra de controles si está visible
       const padVisible = !!(this.pad && !this.pad.hasAttribute("hidden"));
