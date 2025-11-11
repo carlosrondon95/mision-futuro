@@ -88,6 +88,7 @@ body {
 
 /* Stage */
 .qr-stage {
+  position: relative; /* ⬅️ AÑADIDO: ancla la marca de agua */
   width: 100%;
   display: flex;
   align-items: center;
@@ -617,7 +618,7 @@ body {
     max-width: 100vw;
     padding-left: 16px;
     padding-right: 16px;
-  }
+  }ç
   #qr-stage.qr-stage {
     margin: 0 auto;
     max-width: none !important;
@@ -626,5 +627,27 @@ body {
     width: 100% !important;
     height: auto;
     aspect-ratio: 3 / 1;
+  }
+}
+
+/* === Marca de agua (dentro del stage, sin tocar HTML) === */
+.qr-stage::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: clamp(64px, 12vw, 120px);
+  height: clamp(24px, 6vw, 60px);
+  background: url("../img/logoversus.png") no-repeat 50% 50% / contain;
+  opacity: 0.60;
+  pointer-events: none;
+  z-index: 10005; /* sobre el canvas, bajo .qr-modal (10006) */
+}
+@media (max-width: 480px) {
+  .qr-stage::after {
+    top: 8px;
+    right: 8px;
+    width: 80px;
+    height: 40px;
   }
 }
