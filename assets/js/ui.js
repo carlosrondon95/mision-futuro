@@ -1,4 +1,3 @@
-// assets/js/ui.js
 (function () {
   // ===== Utilidad: total de puertas (todas las preguntas + formulario final) =====
   function getTotalDoors() {
@@ -199,6 +198,7 @@
     const card = document.createElement("div");
     card.className = "qr-card qr-card--select";
 
+    /* FIX: la plantilla debe cerrar con backtick, no con comillas */
     card.innerHTML = `
       <h3 class="qr-title">Elige tu personaje</h3>
       <div class="qr-select" role="listbox" aria-label="Elige personaje">
@@ -273,7 +273,8 @@
     const modal = document.createElement("div");
     modal.className = "qr-modal";
     const card = document.createElement("div");
-    card.className = "qr-card";
+    /* Modificador para aplicar el tema sin afectar otras ventanas */
+    card.className = "qr-card qr-card--question";
 
     card.innerHTML = `
       <div class="qr-q">${qObj.q}</div>
@@ -325,7 +326,7 @@
 
     card.innerHTML = `
       <form id="qrLeadForm" novalidate>
-        <h3 class="qr-title">📩 Tus datos</h3>
+        <h3 class="qr-title">TUS DATOS</h3>
 
         <div class="qr-form-grid">
           <div class="qr-row">

@@ -1,4 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Press+Start+2P&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Press+Start+2P&family=Roboto:wght@400;500;700&display=swap");
+
+/* Fuente “Game Over Regular” (coloca los ficheros en assets/fonts/) */
+@font-face {
+  font-family: "GameOver";
+  src: url("../fonts/gameover-regular.woff2") format("woff2"),
+    url("../fonts/gameover-regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --brand-dark: #9a794a;
@@ -88,7 +98,7 @@ body {
 
 /* Stage */
 .qr-stage {
-  position: relative; /* ⬅️ AÑADIDO: ancla la marca de agua */
+  position: relative; /* ancla la marca de agua */
   width: 100%;
   display: flex;
   align-items: center;
@@ -476,7 +486,7 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
-/* Política de privacidad en azul y subrayada */
+/* Política de privacidad */
 .qr-link,
 .qr-link:visited {
   color: #1976d2;
@@ -618,7 +628,7 @@ body {
     max-width: 100vw;
     padding-left: 16px;
     padding-right: 16px;
-  }ç
+  }
   #qr-stage.qr-stage {
     margin: 0 auto;
     max-width: none !important;
@@ -639,7 +649,7 @@ body {
   width: clamp(64px, 12vw, 120px);
   height: clamp(24px, 6vw, 60px);
   background: url("../img/logoversus.png") no-repeat 50% 50% / contain;
-  opacity: 0.60;
+  opacity: 0.6;
   pointer-events: none;
   z-index: 10005; /* sobre el canvas, bajo .qr-modal (10006) */
 }
@@ -651,3 +661,155 @@ body {
     height: 40px;
   }
 }
+
+/* ============ THEME APLICADO SOLO A PREGUNTAS Y FORMULARIO ============ */
+
+/* Fondo azul para la tarjeta de PREGUNTAS (tamaños intactos) */
+.qr-card--question {
+  background: #009fe3;
+}
+
+/* Texto de la pregunta: Game Over Regular, amarillo con borde negro */
+.qr-card--question .qr-q {
+  font-family: "GameOver", "Press Start 2P", monospace;
+  color: #ffed00;
+  /* Stroke cross-browser */
+  -webkit-text-stroke: 1px #000;
+  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
+    -1px -1px 0 #000, 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
+  font-weight: 400;
+}
+
+/* Botones de respuesta: amarillo con borde #e71d73 y tipografía Roboto en negro */
+.qr-card--question .qr-opt {
+  background: #ffed00;
+  border-color: #e71d73;
+  color: #000;
+  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+.qr-card--question .qr-opt:hover,
+.qr-card--question .qr-opt:focus {
+  background: #fff066; /* ligero realce sin cambiar tamaño */
+  border-color: #e71d73;
+}
+
+/* FORMULARIO final con el mismo tema de color */
+.qr-card--form {
+  background: #009fe3; /* azul card */
+}
+.qr-card--form .qr-title {
+  font-family: "GameOver", "Press Start 2P", monospace;
+  color: #ffed00;
+  -webkit-text-stroke: 1px #000;
+  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
+    -1px -1px 0 #000, 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
+  font-weight: 400;
+}
+.qr-card--form label {
+  color: #000;
+  font-weight: 600;
+}
+.qr-card--form .qr-input {
+  background: #ffed00;
+  border-color: #e71d73;
+  color: #000;
+  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+.qr-card--form .qr-input::placeholder {
+  color: rgba(0, 0, 0, 0.6);
+}
+.qr-card--form .qr-consent {
+  color: #000;
+}
+.qr-card--form .qr-link,
+.qr-card--form .qr-link:visited {
+  color: #000; /* mejor contraste sobre azul */
+  text-decoration: underline;
+}
+
+/* ===== Overrides: borde único negro + pregunta más grande ===== */
+
+/* Unificar color de borde a negro en todos los recuadros tocados */
+.qr-card,
+.qr-hud,
+.qr-select__item,
+.qr-opt,
+.qr-input,
+.qr-exit,
+.qr-pad__btn,
+.qr-stage {
+  border-color: #000 !important;
+}
+
+/* Quitar doble borde (outline blanco + anillo gris) y marcos extra */
+.qr-card,
+.qr-hud,
+.qr-select__item,
+.qr-stage {
+  outline: none !important;
+  box-shadow: none !important; /* elimina el anillo gris */
+}
+
+/* Botones/campos sin anillos ni sombras extra */
+.qr-opt,
+.qr-input,
+.qr-pad__btn,
+.qr-exit {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Grosor consistente de los bordes */
+.qr-card,
+.qr-stage {
+  border-width: 8px !important;
+}
+.qr-hud,
+.qr-select__item,
+.qr-opt,
+.qr-input,
+.qr-exit,
+.qr-pad__btn {
+  border-width: 4px !important;
+}
+
+/* Pregunta: un poco más grande y con menos contorno */
+.qr-card--question .qr-q {
+  font-size: 18px; /* +2px respecto a 16px */
+  -webkit-text-stroke: 0.5px #000; /* antes 1px */
+  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
+    -1px -1px 0 #000; /* menos sombras para más claridad */
+}
+
+/* Escala en fullscreen coherente */
+#qr-app.qr-app--fs .qr-card--question .qr-q {
+  font-size: clamp(16px, 2.8vw, 20px);
+}
+
+/* ===== Título del formulario final (TUS DATOS) más grande ===== */
+.qr-card--form .qr-title {
+  font-size: 20px !important; /* antes ~16px */
+  letter-spacing: 0.4px;
+}
+
+/* En fullscreen, escalar con viewport manteniendo tope razonable */
+#qr-app.qr-app--fs .qr-card--form .qr-title {
+  font-size: clamp(18px, 3vw, 24px) !important;
+}
+
+
+/* Si quieres mantener solo una sombra inferior sutil en las tarjetas,
+   comenta el box-shadow:none anterior de .qr-card y usa esto:
+.qr-card { box-shadow: 0 6px 0 #000 !important; }
+*/
+
+/* Mantener botones como estaban (marca), pero puedes descomentar si quieres tematizarlos también */
+/*
+.qr-card--form .qr-btn {
+  background: #e71d73;
+  box-shadow: 0 4px 0 #b11456;
+}
+.qr-card--form .qr-btn:active {
+  box-shadow: 0 2px 0 #b11456;
+}
+*/
