@@ -7,6 +7,7 @@
   const padEl = document.getElementById("qr-pad");
   if (!canvas || !stage || !appRoot) return;
 
+  // --- Detección base URL del plugin ---
   function detectBaseFromScript() {
     const scripts = document.getElementsByTagName("script");
     for (let i = 0; i < scripts.length; i++) {
@@ -23,6 +24,7 @@
         : qrAjax.base_url + "/"
       : detectBaseFromScript();
 
+  // --- Helpers de carga ---
   function loadImage(src) {
     return new Promise((res, rej) => {
       const img = new Image();
@@ -42,26 +44,17 @@
     ]);
     return { idle, stepR, stepL, jump };
   }
-  async function preloadBg() {
-    return await loadImage(`${BASE}assets/img/fondo.png`);
-  }
-  async function preloadDoor() {
-    return await loadImage(`${BASE}assets/img/puerta.png`);
-  }
-  async function preloadCopa() {
-    return await loadImage(`${BASE}assets/img/copa.png`);
-  }
-  async function preloadObstacle() {
-    return await loadImage(`${BASE}assets/img/obstaculo.png`);
-  }
+  const preloadBg = () => loadImage(`${BASE}assets/img/fondo.png`);
+  const preloadDoor = () => loadImage(`${BASE}assets/img/puerta.png`);
+  const preloadCopa = () => loadImage(`${BASE}assets/img/copa.png`);
+  const preloadObstacle = () => loadImage(`${BASE}assets/img/obstaculo.png`);
+
   async function preloadDecos() {
     const dir = `${BASE}assets/img/deco/`;
     const keys = {
       cometa: "cometa.png",
       marciano: "marciano.png",
-      nave: "nave-espacial.png",
-      pajaro1: "pajaro-1.png",
-      pajaro2: "pajaro-2.png",
+      ovni: "nave-espacial.png", // <- mapeo a 'ovni' que usa game.js
     };
     const entries = await Promise.all(
       Object.entries(keys).map(async ([k, f]) => [k, await loadImage(dir + f)])
@@ -69,6 +62,7 @@
     return Object.fromEntries(entries);
   }
 
+  // --- Detección móvil básica ---
   const isMobile = (function () {
     const ua = (
       navigator.userAgent ||
@@ -86,11 +80,10 @@
       window.matchMedia && window.matchMedia("(hover: none)").matches;
     return uaMobile || (coarse && noHover);
   })();
-
   if (isMobile) document.body.classList.add("is-mobile");
   else document.body.classList.remove("is-mobile");
 
-  /* ✅ Tamaño de Stage también ANTES de pulsar "Jugar" (escritorio) */
+  // --- Tamaño cómodo en escritorio antes de jugar ---
   function applyDesktopWide() {
     const vw = Math.max(
       document.documentElement.clientWidth,
@@ -106,8 +99,6 @@
     canvas.style.height = targetH + "px";
     appRoot.classList.add("qr-wide");
   }
-
-  // ⬅️ Aplica tamaño inicial en escritorio
   if (!isMobile) {
     stage.classList.remove("qr-stage--mobile");
     if (padEl) {
@@ -123,8 +114,9 @@
     fsMgr = null;
   const padState = { left: false, right: false };
 
+  // --- Arranque desde el modal de inicio ---
   window.QRUI.startModal(async () => {
-    // 🔊 Audio al arrancar tras gesto del usuario
+    // Audio tras gesto
     if (window.QRAudio) {
       try {
         window.QRAudio.init(BASE);
@@ -134,6 +126,7 @@
       }
     }
 
+    // Entornos
     if (isMobile) {
       viewport = new QRViewport(canvas, stage, padEl);
       virtualPad = new VirtualPad({
@@ -158,7 +151,6 @@
         requestAnimationFrame(loopPad);
       })();
     } else {
-      // En escritorio ya hemos aplicado el tamaño inicial, solo aseguramos estado
       stage.classList.remove("qr-stage--mobile");
       if (padEl) {
         padEl.hidden = true;
@@ -166,12 +158,13 @@
       }
     }
 
+    // Selección de personaje
     const malePreview = `${BASE}assets/img/hombre/hombre.png`;
     const femalePreview = `${BASE}assets/img/mujer/mujer.png`;
 
     QRUI.selectHeroModal(malePreview, femalePreview, async (gender) => {
       try {
-        const [heroSprites, fondo, puerta, copa, obstaculo, deco] =
+        const [heroSprites, fondo, puerta, copa, obstaculo, decosMap] =
           await Promise.all([
             preloadHero(gender),
             preloadBg(),
@@ -181,20 +174,32 @@
             preloadDecos(),
           ]);
 
+        // 🔧 Mapeo EXACTO a lo que espera game.js
         const assets = {
-          hero: heroSprites,
           fondo,
           puerta,
           copa,
           obstaculo,
-          deco,
+          decos: {
+            cometa: decosMap.cometa || null,
+            marciano: decosMap.marciano || null,
+            ovni: decosMap.ovni || null,
+          },
+          hero_idle: heroSprites.idle,
+          hero_stepR: heroSprites.stepR,
+          hero_stepL: heroSprites.stepL,
+          hero_jump: heroSprites.jump,
         };
+
+        // Instanciar juego con el pad (móvil) o sin él (desktop)
         window.game = new QRGame(
           canvas,
           hudBadge,
           assets,
           isMobile ? padState : { left: false, right: false }
         );
+
+        // Arrancar
         window.game.start();
       } catch (e) {
         console.error(e);

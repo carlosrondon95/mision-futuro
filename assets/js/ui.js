@@ -1,5 +1,31 @@
 // assets/js/ui.js
 (function () {
+  // ===== Utilidad: total de puertas (todas las preguntas + formulario final) =====
+  function getTotalDoors() {
+    return window.QRData && Array.isArray(window.QRData.QUESTIONS)
+      ? window.QRData.QUESTIONS.length
+      : 0;
+  }
+  function setBadge(currentOneBased) {
+    var badge = document.querySelector(".qr-badge");
+    var total = getTotalDoors();
+    if (badge && total > 0) {
+      var curr = Math.max(1, currentOneBased || 1);
+      badge.textContent = curr + " / " + total;
+    }
+  }
+  // Inicializa el badge nada más cargar este archivo (si existe el elemento)
+  setBadge(1);
+  // Escucha de avance de estación: espera eventos desde el juego
+  // Emite el juego: window.dispatchEvent(new CustomEvent('qr:station', { detail: { index } }))
+  window.addEventListener("qr:station", function (ev) {
+    var idx =
+      ev && ev.detail && typeof ev.detail.index === "number"
+        ? ev.detail.index
+        : 0;
+    setBadge(idx + 1);
+  });
+
   // Los modales cuelgan del STAGE para integrarse y escalar con él
   const stageEl = document.getElementById("qr-stage");
   let root = document.querySelector("#qr-stage #qr-modal-root");
@@ -81,6 +107,8 @@
   function startModal(onPlay) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
+    const totalDoors = getTotalDoors();
+
     const modal = document.createElement("div");
     modal.className = "qr-modal";
     const card = document.createElement("div");
@@ -92,14 +120,14 @@
         <li>Mueve al personaje con ← → / A D.</li>
         <li>Salta y doble salto con ↑ / W / Espacio.</li>
         <li>Acércate a la Puerta 1 para empezar.</li>
-        <li>Completa las 8 para tu recomendación.</li>
+        <li>Completa las ${totalDoors} para tu recomendación.</li>
       </ul>`;
     const mobileList = `
       <ul class="qr-startlist">
         <li>Al pulsar Jugar se abrirá en horizontal.</li>
         <li>Usa los botones táctiles para moverte/saltar.</li>
         <li>Ve hasta la Puerta 1 para empezar.</li>
-        <li>Completa las 8 y verás tu resultado.</li>
+        <li>Completa las ${totalDoors} y verás tu resultado.</li>
       </ul>`;
 
     card.innerHTML = `
