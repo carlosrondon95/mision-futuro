@@ -35,7 +35,12 @@
       this.groundY = this.H - 64;
       this.footY = this.groundY - 8;
 
-      this.stations = 8;
+      // 🔢 Ahora el número de estaciones viene de las preguntas (11 puertas + 1 trofeo = 12)
+      this.stations =
+        window.QRData && Array.isArray(window.QRData.QUESTIONS)
+          ? window.QRData.QUESTIONS.length
+          : 12;
+
       this.spacing = 520;
       this.startX = 60;
       this.portalX = Array.from(
@@ -104,6 +109,10 @@
       window.addEventListener("keydown", this.onKeyDown, { passive: false });
 
       if (this.hudBadge) this.hudBadge.textContent = `1 / ${this.stations}`;
+      // 📣 Notifica al HUD/UI el estado inicial
+      window.dispatchEvent(
+        new CustomEvent("qr:station", { detail: { index: 0 } })
+      );
     }
 
     // === Utilidades input lock ===
@@ -279,7 +288,10 @@
     }
 
     spawnFlyer() {
-      if (!this.assets.deco) return;
+      if (!this.assets.deco) {
+        this.flyTimer = rand(1.8, 3.0);
+        return;
+      }
       const type = this.pickFlyerType();
       if (!type) {
         this.flyTimer = rand(1.8, 3.0);
@@ -483,6 +495,10 @@
               this.step + 1,
               this.stations
             )} / ${this.stations}`;
+          // 📣 Notifica avance al HUD/UI
+          window.dispatchEvent(
+            new CustomEvent("qr:station", { detail: { index: this.step } })
+          );
 
           // Anti-salto al cerrar el modal:
           this._clearJumpInputs();

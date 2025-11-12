@@ -2,7 +2,7 @@
   exit; ?>
 <div id="qr-app">
   <div class="qr-hud">
-    <span>Estación: <span class="qr-badge">1 / 8</span></span>
+    <span>Estación: <span class="qr-badge">1 / 12</span></span>
     <span class="qr-hint qr-hint--desktop">Usa ← → / A D y ↑ / W / Espacio para saltar (doble salto)</span>
     <span class="qr-hint qr-hint--mobile">Usa los botones táctiles para moverte y saltar (doble toque = doble
       salto)</span>
@@ -11,14 +11,13 @@
   <!-- Stage -->
   <div id="qr-stage" class="qr-stage">
     <canvas id="qr-canvas" width="960" height="320"></canvas>
-    <!-- ⬇️ AHORA el root de modales está DENTRO de la Stage -->
     <div id="qr-modal-root"></div>
   </div>
 
   <!-- Honeypot invisible para bots -->
   <input type="text" class="qr-hp" name="website" tabindex="-1" aria-hidden="true" />
 
-  <!-- Controles táctiles (dentro de #qr-app) -->
+  <!-- Controles táctiles -->
   <div id="qr-pad" class="qr-pad" aria-hidden="true" hidden>
     <div class="qr-pad__left" role="group" aria-label="Movimiento">
       <button id="qr-pad-left" class="qr-pad__btn" aria-label="Mover a la izquierda">←</button>
@@ -29,10 +28,10 @@
     </div>
   </div>
 
-  <!-- Botón salir de pantalla completa (dentro de #qr-app) -->
+  <!-- Botón salir FS -->
   <button id="qr-exit" class="qr-exit" aria-label="Salir de pantalla completa" hidden>✕</button>
 
-  <!-- Overlay para forzar horizontal cuando no se puede bloquear orientación -->
+  <!-- Overlay girar -->
   <div id="qr-rotate" class="qr-rotate" hidden>
     <div class="qr-rotate__card">
       <div class="qr-rotate__title">Gira el móvil</div>

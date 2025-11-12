@@ -33,6 +33,13 @@
       img.src = src;
     });
   }
+  async function tryLoadImage(src) {
+    try {
+      return await loadImage(src);
+    } catch {
+      return null;
+    }
+  }
 
   async function preloadHero(gender) {
     const dir = `${BASE}assets/img/${gender}/`;
@@ -51,15 +58,25 @@
 
   async function preloadDecos() {
     const dir = `${BASE}assets/img/deco/`;
-    const keys = {
+    // 👇 Claves que espera game.js: cometa, marciano, nave, (opcional) pajaro1, pajaro2
+    const files = {
       cometa: "cometa.png",
       marciano: "marciano.png",
-      ovni: "nave-espacial.png", // <- mapeo a 'ovni' que usa game.js
+      nave: "nave-espacial.png", // mapeo correcto (antes usabas "ovni")
+      pajaro1: "pajaro1.png", // opcional, si no existe no pasa nada
+      pajaro2: "pajaro2.png", // opcional
     };
     const entries = await Promise.all(
-      Object.entries(keys).map(async ([k, f]) => [k, await loadImage(dir + f)])
+      Object.entries(files).map(async ([k, f]) => [
+        k,
+        await tryLoadImage(dir + f),
+      ])
     );
-    return Object.fromEntries(entries);
+    // Filtra nulos para no romper spawnFlyer
+    return entries.reduce((acc, [k, img]) => {
+      if (img) acc[k] = img;
+      return acc;
+    }, {});
   }
 
   // --- Detección móvil básica ---
@@ -174,21 +191,14 @@
             preloadDecos(),
           ]);
 
-        // 🔧 Mapeo EXACTO a lo que espera game.js
+        // ✅ Mapeo EXACTO a lo que espera game.js
         const assets = {
           fondo,
           puerta,
           copa,
           obstaculo,
-          decos: {
-            cometa: decosMap.cometa || null,
-            marciano: decosMap.marciano || null,
-            ovni: decosMap.ovni || null,
-          },
-          hero_idle: heroSprites.idle,
-          hero_stepR: heroSprites.stepR,
-          hero_stepL: heroSprites.stepL,
-          hero_jump: heroSprites.jump,
+          deco: decosMap, // <- antes era "decos"
+          hero: heroSprites, // <- objeto con {idle, stepR, stepL, jump}
         };
 
         // Instanciar juego con el pad (móvil) o sin él (desktop)
