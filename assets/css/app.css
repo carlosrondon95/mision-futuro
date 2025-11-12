@@ -1,8 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Press+Start+2P&family=Roboto:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 
 /* Fuente “Game Over Regular” (coloca los ficheros en assets/fonts/) */
 @font-face {
-  font-family: "GameOver";
+  font-family: "Game Over Regular";
   src: url("../fonts/gameover-regular.woff2") format("woff2"),
     url("../fonts/gameover-regular.woff") format("woff");
   font-weight: 400;
@@ -32,7 +32,7 @@ body {
 body {
   margin: 0;
   image-rendering: pixelated;
-  font-family: "Poppins", system-ui, -apple-system, sans-serif;
+  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   color: var(--ink);
   overflow-x: hidden;
   background: var(--bg-sky, #cfefff);
@@ -81,7 +81,7 @@ body {
   color: #fff;
   padding: 4px 8px;
   border-radius: 4px;
-  font-family: "Press Start 2P", monospace;
+  font-family: "Game Over Regular", monospace;
   font-size: 11px;
 }
 
@@ -142,7 +142,7 @@ body {
   text-align: center;
 }
 .qr-title {
-  font-family: "Press Start 2P", monospace;
+  font-family: "Game Over Regular", monospace;
   font-size: 16px;
   margin: 0 0 12px;
   word-break: break-word;
@@ -445,16 +445,17 @@ body {
 }
 
 /* Errores inline (altura fija para que no salte el layout) */
+/* Azul más suave ⇒ bajamos saturación del rojo para que no “chille” */
 .qr-error {
-  color: #d32f2f;
+  color: #8e2a2a; /* antes #d32f2f */
   font-size: 12px;
   line-height: 1.3;
   min-height: 14px;
   margin-top: 4px;
 }
 .qr-input.is-invalid {
-  border-color: #d32f2f;
-  box-shadow: 0 3px 0 #000, 0 0 0 2px rgba(211, 47, 47, 0.15) inset;
+  border-color: #8e2a2a; /* alineado con el nuevo rojo */
+  box-shadow: 0 3px 0 #000, 0 0 0 2px rgba(142, 42, 42, 0.18) inset;
 }
 
 /* ===== Ventanas ===== */
@@ -664,14 +665,14 @@ body {
 
 /* ============ THEME APLICADO SOLO A PREGUNTAS Y FORMULARIO ============ */
 
-/* Fondo azul para la tarjeta de PREGUNTAS (tamaños intactos) */
+/* Fondo azul para la tarjeta de PREGUNTAS (más suave y accesible) */
 .qr-card--question {
-  background: #009fe3;
+  background: #6bbfe5; /* antes #009fe3 */
 }
 
 /* Texto de la pregunta: Game Over Regular, amarillo con borde negro */
 .qr-card--question .qr-q {
-  font-family: "GameOver", "Press Start 2P", monospace;
+  font-family: "Game Over Regular", monospace;
   color: #ffed00;
   /* Stroke cross-browser */
   -webkit-text-stroke: 1px #000;
@@ -693,12 +694,12 @@ body {
   border-color: #e71d73;
 }
 
-/* FORMULARIO final con el mismo tema de color */
+/* FORMULARIO final con el mismo tema de color (azul suavizado) */
 .qr-card--form {
-  background: #009fe3; /* azul card */
+  background: #6bbfe5; /* antes #009fe3 */
 }
 .qr-card--form .qr-title {
-  font-family: "GameOver", "Press Start 2P", monospace;
+  font-family: "Game Over Regular", monospace;
   color: #ffed00;
   -webkit-text-stroke: 1px #000;
   text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
@@ -820,8 +821,9 @@ body {
   border-color: #e71d73 !important;
 }
 
-/* 3) Errores del formulario: un pelín más grandes y gruesos */
+/* 3) Errores del formulario: un pelín más grandes y gruesos y con rojo menos saturado */
 .qr-card--form .qr-error {
+  color: #8e2a2a; /* menos “chillón” sobre el azul suavizado */
   font-size: 14px; /* antes 12px */
   font-weight: 700; /* más “grosor” */
   line-height: 1.35;
