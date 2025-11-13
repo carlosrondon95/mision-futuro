@@ -88,12 +88,13 @@ body {
 
 /* Stage */
 .qr-stage {
-  position: relative; /* ancla la marca de agua */
+  position: relative;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
+  /* Fondo por defecto: cielo + suelo del juego para evitar flashes blancos */
+  background: url("../img/fondo.png") center / cover no-repeat, #87ceeb;
   border: 8px solid var(--gray-dark);
   outline: 6px solid #fff;
   box-shadow: 0 0 0 6px var(--gray-dark), 0 8px 0 var(--black);
@@ -102,7 +103,8 @@ body {
   min-height: 200px;
 }
 .qr-stage--mobile {
-  background: #000;
+  /* En móvil también mantenemos el fondo del juego debajo */
+  background: url("../img/fondo.png") center / cover no-repeat, #000;
 }
 #qr-canvas {
   display: block;
@@ -120,13 +122,34 @@ body {
   justify-content: center;
   z-index: 10006;
 }
+
+/* INICIO y SELECCIÓN: quitar gris, ver juego detrás */
+.qr-modal--start,
+.qr-modal--select {
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+/* Por si no añades esas clases al modal, forzamos con :has() */
+.qr-modal:has(.qr-card--start),
+.qr-modal:has(.qr-card--select) {
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+
+/* Cuando está en primer plano INICIO o SELECCIÓN, pinta cielo+suelo de respaldo */
+#qr-stage:has(.qr-card--start),
+#qr-stage:has(.qr-card--select) {
+  background: url("../img/fondo.png") center / cover no-repeat, #87ceeb; /* fallback cielo */
+}
+
+/* Tarjeta base */
 .qr-card {
   background: #fff;
   border: 8px solid var(--gray-dark);
   outline: 6px solid #fff;
   box-shadow: 0 0 0 6px var(--gray-dark), 0 8px 0 var(--black);
   border-radius: 6px;
-  max-width: 640px; /* mismo que “Ceremonia de Asignación” */
+  max-width: 640px;
   width: calc(100% - 24px);
   padding: 18px;
   text-align: center;
@@ -201,6 +224,37 @@ body {
 .qr-btn:active {
   transform: translateY(2px);
   box-shadow: 0 2px 0 var(--brand-dark);
+}
+
+/* Botón basado en imagen (SEND/START del formulario/inicio) */
+.qr-btn--img {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-top: 10px;
+  cursor: pointer;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+}
+.qr-btn--img__icon {
+  display: block;
+  width: min(680px, 96%);
+  height: auto;
+  margin: 0 auto;
+  outline: none !important;
+  border: 0 !important;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.qr-btn--img:focus,
+.qr-btn--img:focus-visible,
+.qr-btn--img:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.qr-btn--img::-moz-focus-inner {
+  border: 0;
 }
 
 /* Final */
@@ -388,7 +442,7 @@ body {
   display: none;
 }
 
-/* Tipografía en FS (se escalan además por JS con fitCardToStage) */
+/* Tipografía en FS */
 #qr-app.qr-app--fs .qr-card {
   max-width: min(640px, 92vw);
 }
@@ -396,7 +450,7 @@ body {
   font-size: clamp(18px, 3vw, 26px);
 }
 #qr-app.qr-app--fs .qr-q {
-  font-size: clamp(16px, 2.6vw, 20px);
+  font-size: clamp(18px, 3vw, 24px);
 }
 #qr-app.qr-app--fs .qr-opt {
   font-size: clamp(13px, 2.4vw, 16px);
@@ -409,11 +463,11 @@ body {
     font-size: 11px;
   }
   .qr-badge {
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 
-/* Ocultar stage en móvil vertical fuera de FS, salvo cuando modal abierto de inicio */
+/* Ocultar stage en móvil vertical fuera de FS, salvo modal inicio */
 @media (orientation: portrait) {
   .is-mobile #qr-app:not(.qr-app--fs) #qr-stage {
     display: none;
@@ -423,7 +477,7 @@ body {
   }
 }
 
-/* Botones pad en FS más compactos */
+/* Botones pad en FS compactos */
 .is-mobile #qr-app.qr-app--fs .qr-pad__btn {
   min-width: clamp(40px, 9vw, 56px);
   min-height: clamp(40px, 9vw, 56px);
@@ -434,49 +488,166 @@ body {
   bottom: calc(28px + env(safe-area-inset-bottom));
 }
 
-/* Errores inline (altura fija para que no salte el layout) */
-/* Azul más suave ⇒ bajamos saturación del rojo para que no “chille” */
+/* Errores inline */
 .qr-error {
-  color: #8e2a2a; /* antes #d32f2f */
+  color: #8e2a2a;
   font-size: 12px;
   line-height: 1.3;
   min-height: 14px;
   margin-top: 4px;
 }
 .qr-input.is-invalid {
-  border-color: #8e2a2a; /* alineado con el nuevo rojo */
+  border-color: #8e2a2a;
   box-shadow: 0 3px 0 #000, 0 0 0 2px rgba(142, 42, 42, 0.18) inset;
 }
 
 /* ===== Ventanas ===== */
+
+/* ——— INICIO (portada) SIN caja y MUCHO más grande, con borde negro redondeado ——— */
 .qr-card--start {
-  width: 640px;
-  max-width: 90vw;
-  max-height: min(90vh, 520px);
+  position: relative;
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  width: auto;
+  max-width: none;
+  padding: 0;
+  border-radius: 0;
+  text-align: center;
+}
+.qr-start-cover {
+  position: relative;
+  width: 100%;
   display: flex;
-  flex-direction: column;
   justify-content: center;
 }
+.qr-start-cover__img {
+  display: block;
+  /* ↑ AUMENTADA: prácticamente a tope de ancho, sin tocar bordes */
+  width: min(99%, 1400px);
+  height: auto;
+  margin: 0 auto;
+  border: 5px solid #000; /* borde negro */
+  border-radius: 8px; /* redondeado igual que menús */
+  box-shadow: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
 
-/* === FORM: igual tamaño que “Ceremonia” + aún más compacto en móvil === */
+/* Botón START centrado abajo y más grande (mismo tamaño que SEND) */
+.qr-start-btn-img {
+  position: absolute;
+  left: 50%;
+  bottom: 2.5%;
+  transform: translateX(-50%);
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.qr-start-btn-img__icon {
+  display: block;
+  width: min(680px, 96%); /* ↑ grande */
+  height: auto;
+  outline: none !important;
+  border: 0 !important;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.qr-start-btn-img:focus,
+.qr-start-btn-img:focus-visible,
+.qr-start-btn-img:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.qr-start-btn-img::-moz-focus-inner {
+  border: 0;
+}
+
+/* === FORM: igual tamaño que “Ceremonia” + inputs amarillos siempre === */
 .qr-card--form {
-  /* Misma caja que .qr-card / .qr-end */
   max-width: 640px;
   width: calc(100% - 24px);
   padding: 16px;
-  /* Sin forzar alturas: dejamos que JS lo escale si hace falta */
   max-height: none;
   overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
-/* Grid para nombre + teléfono en la misma fila */
 .qr-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+/* Inputs SIEMPRE amarillos (rellenos, foco y autofill) */
+.qr-card--form .qr-input,
+.qr-card--form .qr-input:focus,
+.qr-card--form .qr-input:active {
+  background-color: #ffed00 !important;
+  color: #000 !important;
+  border-color: #e71d73 !important;
+  -webkit-text-fill-color: #000 !important;
+}
+.qr-card--form .qr-input::placeholder {
+  color: rgba(0, 0, 0, 0.6);
+}
+.qr-card--form input.qr-input:-webkit-autofill,
+.qr-card--form input.qr-input:-webkit-autofill:hover,
+.qr-card--form input.qr-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #000 !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffed00 inset !important;
+  box-shadow: 0 0 0 1000px #ffed00 inset !important;
+  border: 4px solid #e71d73 !important;
+}
+
+/* Botón SEND (mismo tamaño que START) y sin rectángulo de foco */
+.qr-btn--img {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-top: 10px;
+  cursor: pointer;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+}
+.qr-btn--img__icon {
+  display: block;
+  width: min(680px, 96%);
+  height: auto;
+  margin: 0 auto;
+  outline: none !important;
+  border: 0 !important;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.qr-btn--img:focus,
+.qr-btn--img:focus-visible,
+.qr-btn--img:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.qr-btn--img::-moz-focus-inner {
+  border: 0;
+}
+
+/* Consentimiento más grande */
+.qr-card--form .qr-consent {
+  font-size: 16px;
+  gap: 10px;
+}
+.qr-card--form .qr-consent input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  transform: translateY(2px);
+}
+
 /* Política de privacidad */
 .qr-link,
 .qr-link:visited {
@@ -491,14 +662,11 @@ body {
   outline: 0;
 }
 
-/* En pantallas estrechas, cae a una columna (evita cortes) */
 @media (max-width: 560px) {
   .qr-form-grid {
     grid-template-columns: 1fr;
   }
 }
-
-/* Afinado extra en landscape móvil para que quepa sin scroll visual */
 @media (max-width: 768px) and (orientation: landscape) {
   .qr-card--form {
     padding: 12px 14px;
@@ -520,7 +688,7 @@ body {
   }
 }
 
-/* Selector personaje */
+/* Selector personaje (sin gris, ver juego) */
 .qr-card--select {
   width: 560px;
   height: 360px;
@@ -532,6 +700,10 @@ body {
   align-items: stretch;
   justify-content: center;
   padding: 12px 14px;
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 .qr-select {
   display: grid;
@@ -631,7 +803,7 @@ body {
   }
 }
 
-/* === Marca de agua (dentro del stage, sin tocar HTML) === */
+/* Marca de agua */
 .qr-stage::after {
   content: "";
   position: absolute;
@@ -642,7 +814,7 @@ body {
   background: url("../img/logoversus.png") no-repeat 50% 50% / contain;
   opacity: 0.6;
   pointer-events: none;
-  z-index: 10005; /* sobre el canvas, bajo .qr-modal (10006) */
+  z-index: 10005;
 }
 @media (max-width: 480px) {
   .qr-stage::after {
@@ -653,14 +825,10 @@ body {
   }
 }
 
-/* ============ THEME APLICADO SOLO A PREGUNTAS Y FORMULARIO ============ */
-
-/* Fondo azul para la tarjeta de PREGUNTAS (más suave y accesible) */
+/* ============ THEME SOLO PREGUNTAS Y FORMULARIO ============ */
 .qr-card--question {
-  background: #6bbfe5; /* antes #009fe3 */
+  background: #6bbfe5;
 }
-
-/* Texto de la pregunta: Press Start 2P, amarillo con borde negro */
 .qr-card--question .qr-q {
   font-family: "Press Start 2P", monospace;
   color: #ffed00;
@@ -670,8 +838,6 @@ body {
   font-weight: 400;
   font-size: 20px;
 }
-
-/* Botones de respuesta: amarillo con borde #e71d73 y tipografía Roboto en negro */
 .qr-card--question .qr-opt {
   background: #ffed00;
   border-color: #e71d73;
@@ -680,13 +846,12 @@ body {
 }
 .qr-card--question .qr-opt:hover,
 .qr-card--question .qr-opt:focus {
-  background: #fff066; /* ligero realce sin cambiar tamaño */
+  background: #fff066;
   border-color: #e71d73;
 }
 
-/* FORMULARIO final con el mismo tema de color (azul suavizado) */
 .qr-card--form {
-  background: #6bbfe5; /* antes #009fe3 */
+  background: #6bbfe5;
 }
 .qr-card--form .qr-title {
   font-family: "Press Start 2P", monospace;
@@ -700,27 +865,40 @@ body {
   color: #000;
   font-weight: 600;
 }
-.qr-card--form .qr-input {
-  background: #ffed00;
-  border-color: #e71d73;
-  color: #000;
-  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+
+/* Inputs amarillos (rellenos, foco y autofill) */
+.qr-card--form .qr-input,
+.qr-card--form .qr-input:focus,
+.qr-card--form .qr-input:active {
+  background-color: #ffed00 !important;
+  color: #000 !important;
+  border-color: #e71d73 !important;
+  -webkit-text-fill-color: #000 !important;
 }
 .qr-card--form .qr-input::placeholder {
   color: rgba(0, 0, 0, 0.6);
 }
+.qr-card--form input.qr-input:-webkit-autofill,
+.qr-card--form input.qr-input:-webkit-autofill:hover,
+.qr-card--form input.qr-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #000 !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffed00 inset !important;
+  box-shadow: 0 0 0 1000px #ffed00 inset !important;
+  border: 4px solid #e71d73 !important;
+}
+
+/* Consentimiento más grande */
 .qr-card--form .qr-consent {
-  color: #000;
+  font-size: 16px;
+  gap: 10px;
 }
-.qr-card--form .qr-link,
-.qr-card--form .qr-link:visited {
-  color: #000; /* mejor contraste sobre azul */
-  text-decoration: underline;
+.qr-card--form .qr-consent input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  transform: translateY(2px);
 }
 
-/* ===== Overrides: borde único negro + pregunta más grande ===== */
-
-/* Unificar color de borde a negro en todos los recuadros tocados */
+/* ===== Overrides: borde único negro ===== */
 .qr-card,
 .qr-hud,
 .qr-select__item,
@@ -731,17 +909,13 @@ body {
 .qr-stage {
   border-color: #000 !important;
 }
-
-/* Quitar doble borde (outline blanco + anillo gris) y marcos extra */
 .qr-card,
 .qr-hud,
 .qr-select__item,
 .qr-stage {
   outline: none !important;
-  box-shadow: none !important; /* elimina el anillo gris */
+  box-shadow: none !important;
 }
-
-/* Botones/campos sin anillos ni sombras extra */
 .qr-opt,
 .qr-input,
 .qr-pad__btn,
@@ -749,8 +923,6 @@ body {
   outline: none !important;
   box-shadow: none !important;
 }
-
-/* Grosor consistente de los bordes */
 .qr-card,
 .qr-stage {
   border-width: 8px !important;
@@ -764,61 +936,34 @@ body {
   border-width: 4px !important;
 }
 
-/* Pregunta: override final de tamaño y contorno */
+/* Pregunta: tamaño y contorno */
 .qr-card--question .qr-q {
-  font-size: 20px; /* considerablemente más grande que el base 16px */
+  font-size: 20px;
   -webkit-text-stroke: 0.75px #000;
   text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
     -1px -1px 0 #000;
 }
 
-/* Escala en fullscreen coherente para las preguntas */
+/* Escala en fullscreen coherente preguntas/título */
 #qr-app.qr-app--fs .qr-card--question .qr-q {
   font-size: clamp(18px, 3vw, 24px);
 }
-
-/* ===== Título del formulario final (TUS DATOS) más grande ===== */
 .qr-card--form .qr-title {
   font-size: 26px !important;
   letter-spacing: 0.4px;
 }
-
-/* En fullscreen, escalar con viewport manteniendo tope razonable */
 #qr-app.qr-app--fs .qr-card--form .qr-title {
   font-size: clamp(20px, 3.2vw, 26px) !important;
 }
 
-/**/
-/* 1) Cuadros de diálogo */
-.qr-card,
-.qr-card.qr-card--start,
-.qr-card.qr-card--question,
-.qr-card.qr-card--form,
-.qr-card.qr-end {
-  border-width: 5px !important; /* antes 8px */
-}
-
-/* 2) Respuestas y campos del formulario*/
-.qr-opt,
-.qr-input {
-  border-color: #e71d73 !important;
-}
-
-.qr-opt:hover,
-.qr-opt:focus {
-  border-color: #e71d73 !important;
-}
-
-/* 3) Errores del formulario */
+/* Errores del formulario */
 .qr-card--form .qr-error {
-  color: #8e2a2a; /* menos “chillón” sobre el azul suavizado */
-  font-size: 14px; /* antes 12px */
-  font-weight: 700; /* más “grosor” */
+  color: #8e2a2a;
+  font-size: 14px;
+  font-weight: 700;
   line-height: 1.35;
-  min-height: 16px; /* evitar saltos de layout */
+  min-height: 16px;
 }
-
-/* Escalado coherente en fullscreen */
 #qr-app.qr-app--fs .qr-card--form .qr-error {
   font-size: clamp(13px, 2.6vw, 15px);
 }

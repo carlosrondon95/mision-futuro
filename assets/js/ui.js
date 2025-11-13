@@ -1,10 +1,12 @@
+// assets/js/ui.js
 (function () {
-  // ===== Utilidad: total de puertas (todas las preguntas + formulario final) =====
+  // ===== Util: total de puertas (preguntas + formulario final) =====
   function getTotalDoors() {
     return window.QRData && Array.isArray(window.QRData.QUESTIONS)
       ? window.QRData.QUESTIONS.length
       : 0;
   }
+
   function setBadge(currentOneBased) {
     var badge = document.querySelector(".qr-badge");
     var total = getTotalDoors();
@@ -13,10 +15,8 @@
       badge.textContent = curr + " / " + total;
     }
   }
-  // Inicializa el badge nada más cargar este archivo (si existe el elemento)
   setBadge(1);
-  // Escucha de avance de estación: espera eventos desde el juego
-  // Emite el juego: window.dispatchEvent(new CustomEvent('qr:station', { detail: { index } }))
+
   window.addEventListener("qr:station", function (ev) {
     var idx =
       ev && ev.detail && typeof ev.detail.index === "number"
@@ -25,7 +25,22 @@
     setBadge(idx + 1);
   });
 
-  // Los modales cuelgan del STAGE para integrarse y escalar con él
+  // ===== Resolver base de assets =====
+  function resolveAssetsBase() {
+    if (window.QR_ASSETS_BASE) {
+      return String(window.QR_ASSETS_BASE).replace(/\/?$/, "/");
+    }
+    const scripts = document.scripts || document.getElementsByTagName("script");
+    for (let i = 0; i < scripts.length; i++) {
+      const src = scripts[i].src || "";
+      const m = src.match(/^(.*\/assets\/)js\/ui\.js(?:\?.*)?$/i);
+      if (m) return m[1];
+    }
+    return "assets/";
+  }
+  const ASSETS = resolveAssetsBase();
+
+  // ===== Infra modal =====
   const stageEl = document.getElementById("qr-stage");
   let root = document.querySelector("#qr-stage #qr-modal-root");
   if (!root) {
@@ -33,7 +48,6 @@
     root.id = "qr-modal-root";
     if (stageEl) stageEl.appendChild(root);
   }
-
   const appEl = document.getElementById("qr-app");
 
   function markStageModalOpen(on) {
@@ -64,7 +78,7 @@
     );
   }
 
-  /* Bloquea scroll con ESPACIO dentro del juego/modales */
+  // Bloquear scroll con espacio
   (function installSpaceScrollGuard() {
     const handler = (e) => {
       const code = e.code || e.key;
@@ -81,7 +95,7 @@
     });
   })();
 
-  /* Escalado para mantener siempre visible el contenido del modal */
+  // Ajuste de escala
   function fitCardToStage(card, minScale = 0.85) {
     if (!card || !stageEl) return;
     const rectStage = stageEl.getBoundingClientRect();
@@ -102,39 +116,30 @@
     if (scale < 1) card.style.transform = `scale(${scale})`;
   }
 
-  /* ===== Menú de inicio ===== */
+  // ===== Pantalla de inicio (portada + botón start.png) =====
   function startModal(onPlay) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
-    const totalDoors = getTotalDoors();
-
     const modal = document.createElement("div");
-    modal.className = "qr-modal";
+    modal.className = "qr-modal qr-modal--start"; // SIN gris: fondo transparente
+
     const card = document.createElement("div");
     card.className = "qr-card qr-card--start";
 
-    const mobile = isMobile();
-    const desktopList = `
-      <ul class="qr-startlist">
-        <li>Mueve al personaje con ← → / A D.</li>
-        <li>Salta y doble salto con ↑ / W / Espacio.</li>
-        <li>Acércate a la Puerta 1 para empezar.</li>
-        <li>Completa las ${totalDoors} para tu recomendación.</li>
-      </ul>`;
-    const mobileList = `
-      <ul class="qr-startlist">
-        <li>Al pulsar Jugar se abrirá en horizontal.</li>
-        <li>Usa los botones táctiles para moverte/saltar.</li>
-        <li>Ve hasta la Puerta 1 para empezar.</li>
-        <li>Completa las ${totalDoors} y verás tu resultado.</li>
-      </ul>`;
-
     card.innerHTML = `
-      <h3 class="qr-title">🎮 Misión Futuro</h3>
-      <p class="qr-lead"><strong>Tu futuro empieza hoy.</strong></p>
-      ${mobile ? mobileList : desktopList}
-      <div class="qr-start-actions">
-        <button class="qr-btn" id="qrStartBtn">Jugar</button>
+      <div class="qr-start-cover">
+        <img
+          src="${ASSETS}img/portada.png"
+          alt="Pantalla de inicio"
+          class="qr-start-cover__img"
+        />
+        <button class="qr-start-btn-img" id="qrStartBtn" type="button" aria-label="Jugar">
+          <img
+            src="${ASSETS}img/buttons/start.png"
+            alt="Jugar"
+            class="qr-start-btn-img__icon"
+          />
+        </button>
       </div>
     `;
 
@@ -143,7 +148,7 @@
     markStageModalOpen(true);
     emit("qr:modal:open");
 
-    const refit = () => requestAnimationFrame(() => fitCardToStage(card, 0.78));
+    const refit = () => requestAnimationFrame(() => fitCardToStage(card, 0.95));
     refit();
     window.addEventListener("resize", refit);
     window.addEventListener("orientationchange", refit);
@@ -185,24 +190,25 @@
         start();
       }
     };
-    document.getElementById("qrStartBtn").addEventListener("click", start);
+
+    const btn = card.querySelector("#qrStartBtn");
+    if (btn) btn.addEventListener("click", start);
     window.addEventListener("keydown", keyHandler);
   }
 
-  /* ===== Selección de personaje ===== */
+  // ===== Selección de personaje =====
   function selectHeroModal(maleUrl, femaleUrl, onSelect) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
     const modal = document.createElement("div");
-    modal.className = "qr-modal";
+    modal.className = "qr-modal qr-modal--select"; // SIN gris: fondo transparente
     const card = document.createElement("div");
     card.className = "qr-card qr-card--select";
 
-    /* FIX: la plantilla debe cerrar con backtick, no con comillas */
     card.innerHTML = `
       <h3 class="qr-title">Elige tu personaje</h3>
       <div class="qr-select" role="listbox" aria-label="Elige personaje">
-        <button class="qr-select__item" id="selMale"  aria-label="Hombre">
+        <button class="qr-select__item" id="selMale" aria-label="Hombre">
           <div class="qr-select__imgwrap">
             <img class="qr-select__img" src="${maleUrl}" alt="Hombre" />
           </div>
@@ -242,6 +248,7 @@
       close();
       onSelect && onSelect(g);
     };
+
     card
       .querySelector("#selMale")
       .addEventListener("click", () => pick("hombre"));
@@ -251,7 +258,7 @@
 
     const items = card.querySelectorAll(".qr-select__item");
     let idx = 0;
-    items[idx].focus();
+    if (items[0]) items[0].focus();
     card.addEventListener("keydown", (e) => {
       if (e.key === "ArrowRight") {
         idx = Math.min(items.length - 1, idx + 1);
@@ -267,13 +274,12 @@
     });
   }
 
-  /* ===== Pregunta ===== */
+  // ===== Pregunta =====
   function questionModal(qObj, onAnswer) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
     const modal = document.createElement("div");
     modal.className = "qr-modal";
     const card = document.createElement("div");
-    /* Modificador para aplicar el tema sin afectar otras ventanas */
     card.className = "qr-card qr-card--question";
 
     card.innerHTML = `
@@ -315,7 +321,7 @@
     );
   }
 
-  /* ===== Formulario (igual tamaño que “Ceremonia” + auto-escalado) ===== */
+  // ===== Formulario (TUS DATOS) =====
   function formModal(onSubmit) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -326,7 +332,7 @@
 
     card.innerHTML = `
       <form id="qrLeadForm" novalidate>
-        <h3 class="qr-title">TUS DATOS</h3>
+        <h3 class="qr-title">📩 TUS DATOS</h3>
 
         <div class="qr-form-grid">
           <div class="qr-row">
@@ -356,7 +362,9 @@
         </div>
 
         <div class="qr-start-actions">
-          <button class="qr-btn" id="btnSend" type="submit">Enviar</button>
+          <button class="qr-btn--img" id="btnSend" type="submit" aria-label="Enviar">
+            <img src="${ASSETS}img/buttons/send.png" alt="Enviar" class="qr-btn--img__icon" />
+          </button>
         </div>
       </form>
     `;
@@ -368,7 +376,6 @@
     markStageModalOpen(true);
     emit("qr:modal:open");
 
-    // Auto-escalado como el resto de modales (mismo “tamaño visual” que la ceremonia)
     const refit = () => requestAnimationFrame(() => fitCardToStage(card, 0.85));
     refit();
     window.addEventListener("resize", refit);
@@ -384,12 +391,11 @@
       { once: true }
     );
 
-    // Evitar que el enlace altere el checkbox
     const policyLink = card.querySelector("#policyLink");
     if (policyLink)
       policyLink.addEventListener("click", (e) => e.stopPropagation());
 
-    /* === Validación propia (sin nativa del navegador) === */
+    // Validación
     const form = card.querySelector("#qrLeadForm");
     const nameI = card.querySelector("#fName");
     const mailI = card.querySelector("#fEmail");
@@ -399,7 +405,6 @@
     const errEmail = card.querySelector("#errEmail");
     const errPhone = card.querySelector("#errPhone");
     const errCons = card.querySelector("#errConsent");
-
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
     function setErr(inputEl, errEl, msg) {
@@ -485,7 +490,7 @@
     consI.addEventListener("change", validateConsent);
 
     form.addEventListener("submit", (e) => {
-      e.preventDefault(); // sin validación nativa
+      e.preventDefault();
       if (!validateAll()) {
         if (!validateName()) return nameI.focus();
         if (!validateEmail()) return mailI.focus();
@@ -493,7 +498,6 @@
         if (!validateConsent()) return consI.focus();
         return;
       }
-      // OK -> cerrar y devolver datos a game.js
       close();
       onSubmit &&
         onSubmit({
@@ -505,7 +509,7 @@
     });
   }
 
-  /* ===== Final ===== */
+  // ===== Final =====
   function endingModal(result, onRestart) {
     const { top1, top2, bullets } = result;
     if (document.querySelector("#qr-stage .qr-modal")) return;
@@ -526,14 +530,13 @@
         ${bullets.map((b) => `<li>${b}</li>`).join("")}
       </ul>
       <div class="qr-end-actions">
-        <button class="qr-btn" id="btnRestart">Reiniciar</button>
+        <button class="qr-btn" id="btnRestart" type="button">Reiniciar</button>
       </div>
     `;
 
     modal.appendChild(card);
     root.appendChild(modal);
     markStageModalOpen(true);
-    document.getElementById("btnRestart").addEventListener("click", onRestart);
     emit("qr:modal:open");
 
     const refit = () => requestAnimationFrame(() => fitCardToStage(card, 0.85));
@@ -550,6 +553,9 @@
       },
       { once: true }
     );
+
+    const btnRestart = document.getElementById("btnRestart");
+    if (btnRestart) btnRestart.addEventListener("click", onRestart);
   }
 
   window.QRUI = {

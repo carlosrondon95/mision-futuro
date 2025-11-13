@@ -573,6 +573,10 @@
         H = this.H;
       const yBottom = this.footY;
 
+      // Fondo: solo dibujamos si tenemos textura cargada.
+      // Si no, dejamos transparente y se verá fondo.png del stage (CSS),
+      // evitando flashes blancos.
+      ctx.clearRect(0, 0, W, H);
       if (this.assets.fondo) {
         const bg = this.assets.fondo;
         const iw = bg.width,
@@ -583,12 +587,6 @@
         const offset = -Math.floor(this.camX * factor) % drawW;
         for (let x = offset - drawW; x < W + drawW; x += drawW)
           ctx.drawImage(bg, x, 0, drawW, H);
-      } else {
-        const g = ctx.createLinearGradient(0, 0, 0, H);
-        g.addColorStop(0, "#f3f3f3");
-        g.addColorStop(1, "#ffffff");
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, W, H);
       }
 
       ctx.save();
