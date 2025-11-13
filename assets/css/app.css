@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;500;700&display=swap");
 
+/* =================== VARIABLES =================== */
 :root {
   --brand-dark: #9a794a;
   --brand-light: #d09e55;
@@ -11,6 +12,7 @@
   --ink: var(--gray-dark);
 }
 
+/* =================== BASE =================== */
 * {
   box-sizing: border-box;
 }
@@ -21,7 +23,7 @@ body {
 
 body {
   margin: 0;
-  image-rendering: pixelated;
+  image-rendering: pixelated; /* sprites nítidos */
   font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   color: var(--ink);
   overflow-x: hidden;
@@ -51,7 +53,7 @@ body {
   justify-content: center;
 }
 
-/* HUD */
+/* =================== HUD =================== */
 .qr-hud {
   display: flex;
   gap: 12px;
@@ -86,14 +88,14 @@ body {
   display: inline;
 }
 
-/* Stage */
+/* =================== STAGE =================== */
 .qr-stage {
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Fondo por defecto: cielo + suelo del juego para evitar flashes blancos */
+  /* Fondo por defecto del juego (se verá en selección y durante el juego) */
   background: url("../img/fondo.png") center / cover no-repeat, #87ceeb;
   border: 8px solid var(--gray-dark);
   outline: 6px solid #fff;
@@ -103,7 +105,6 @@ body {
   min-height: 200px;
 }
 .qr-stage--mobile {
-  /* En móvil también mantenemos el fondo del juego debajo */
   background: url("../img/fondo.png") center / cover no-repeat, #000;
 }
 #qr-canvas {
@@ -112,7 +113,13 @@ body {
   touch-action: none;
 }
 
-/* ===== Modales dentro del STAGE ===== */
+/* En portada, el fondo lo pinta JS con inicio.jpg a pantalla completa.
+   Aquí sólo evitamos el pixelado para máxima nitidez de esa imagen. */
+#qr-stage.qr-stage--start {
+  image-rendering: auto !important;
+}
+
+/* =================== MODALES =================== */
 .qr-modal {
   position: absolute;
   inset: 0;
@@ -123,26 +130,103 @@ body {
   z-index: 10006;
 }
 
-/* INICIO y SELECCIÓN: quitar gris, ver juego detrás */
+/* INICIO y SELECCIÓN: sin gris, se ve el fondo del stage */
 .qr-modal--start,
 .qr-modal--select {
   background: transparent !important;
   backdrop-filter: none !important;
 }
-/* Por si no añades esas clases al modal, forzamos con :has() */
-.qr-modal:has(.qr-card--start),
-.qr-modal:has(.qr-card--select) {
+
+/* ===== PORTADA (INICIO) ===== */
+
+/* Tarjeta de inicio ocupando todo el stage */
+.qr-card--start {
+  position: absolute;
+  inset: 0;
   background: transparent !important;
-  backdrop-filter: none !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
 }
 
-/* Cuando está en primer plano INICIO o SELECCIÓN, pinta cielo+suelo de respaldo */
-#qr-stage:has(.qr-card--start),
-#qr-stage:has(.qr-card--select) {
-  background: url("../img/fondo.png") center / cover no-repeat, #87ceeb; /* fallback cielo */
+/* Contenedor de la imagen + botón: ocupa todo el screen */
+.qr-start-cover {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* CENTRO horizontal del screen */
+  justify-content: flex-end; /* colocamos el contenido abajo */
+  padding-bottom: 8%; /* ajusta aquí la altura del botón */
 }
 
-/* Tarjeta base */
+/* inicio.jpg */
+.qr-start-cover__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Botón START centrado horizontalmente en el stage, bajo el cuadro de texto */
+.qr-start-btn-img {
+  position: absolute;
+  left: 50%; /* punto medio exacto del stage */
+  bottom: 8%; /* ajusta altura desde el suelo */
+  transform: translateX(-50%); /* centrado real respecto al propio ancho */
+
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+  box-shadow: none !important;
+  z-index: 10; /* asegura que quede por encima de todo */
+}
+
+.qr-start-btn-img__icon {
+  display: block;
+  width: clamp(180px, 18vw, 260px); /* tamaño fijo relativo al viewport */
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
+}
+
+.qr-start-btn-img:focus,
+.qr-start-btn-img:focus-visible,
+.qr-start-btn-img:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.qr-start-btn-img__icon {
+  display: block;
+  width: min(680px, 96%);
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
+}
+
+.qr-start-btn-img:focus,
+.qr-start-btn-img:focus-visible,
+.qr-start-btn-img:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* =================== TARJETA BASE / PREGUNTAS / FORM =================== */
 .qr-card {
   background: #fff;
   border: 8px solid var(--gray-dark);
@@ -184,7 +268,6 @@ body {
   background: #fdf8f1;
   border-color: var(--brand-dark);
 }
-
 .qr-input {
   width: 100%;
   padding: 12px;
@@ -208,7 +291,6 @@ body {
   align-items: center;
   justify-content: center;
 }
-
 .qr-btn {
   background: var(--brand-light);
   color: #fff;
@@ -226,7 +308,7 @@ body {
   box-shadow: 0 2px 0 var(--brand-dark);
 }
 
-/* Botón basado en imagen (SEND/START del formulario/inicio) */
+/* Botón imagen genérico (SEND) */
 .qr-btn--img {
   background: transparent;
   border: none;
@@ -257,7 +339,252 @@ body {
   border: 0;
 }
 
-/* Final */
+/* =================== FORMULARIO =================== */
+.qr-card--form {
+  background: #6bbfe5;
+}
+.qr-card--form .qr-title {
+  font-family: "Press Start 2P", monospace;
+  color: #ffed00;
+  -webkit-text-stroke: 1px #000;
+  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
+    -1px -1px 0 #000, 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
+  font-weight: 400;
+}
+.qr-card--form label {
+  color: #000;
+  font-weight: 600;
+}
+
+/* Inputs SIEMPRE amarillos (relleno, foco y autofill) */
+.qr-card--form .qr-input,
+.qr-card--form .qr-input:focus,
+.qr-card--form .qr-input:active {
+  background-color: #ffed00 !important;
+  color: #000 !important;
+  border-color: #e71d73 !important;
+  -webkit-text-fill-color: #000 !important;
+}
+.qr-card--form .qr-input::placeholder {
+  color: rgba(0, 0, 0, 0.6);
+}
+.qr-card--form input.qr-input:-webkit-autofill,
+.qr-card--form input.qr-input:-webkit-autofill:hover,
+.qr-card--form input.qr-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #000 !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffed00 inset !important;
+  box-shadow: 0 0 0 1000px #ffed00 inset !important;
+  border: 4px solid #e71d73 !important;
+}
+
+/* Consentimiento más grande */
+.qr-card--form .qr-consent {
+  font-size: 16px;
+  gap: 10px;
+}
+.qr-card--form .qr-consent input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  transform: translateY(2px);
+}
+
+/* Política de privacidad */
+.qr-link,
+.qr-link:visited {
+  color: #1976d2;
+  text-decoration: underline;
+  font-weight: 600;
+}
+.qr-link:hover,
+.qr-link:focus {
+  text-decoration: underline;
+  filter: brightness(0.9);
+  outline: 0;
+}
+
+/* Grid y ajustes del form */
+.qr-card--form {
+  max-width: 640px;
+  width: calc(100% - 24px);
+  padding: 16px;
+  max-height: none;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.qr-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 560px) {
+  .qr-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 768px) and (orientation: landscape) {
+  .qr-card--form {
+    padding: 12px 14px;
+  }
+  .qr-card--form .qr-title {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .qr-card--form .qr-row {
+    margin: 6px 0;
+  }
+  .qr-card--form .qr-input {
+    padding: 10px;
+    font-size: 13px;
+  }
+  .qr-card--form .qr-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Errores inline */
+.qr-error {
+  color: #8e2a2a;
+  font-size: 12px;
+  line-height: 1.3;
+  min-height: 14px;
+  margin-top: 4px;
+}
+.qr-input.is-invalid {
+  border-color: #8e2a2a;
+  box-shadow: 0 3px 0 #000, 0 0 0 2px rgba(142, 42, 42, 0.18) inset;
+}
+
+/* =================== PREGUNTAS (THEME) =================== */
+.qr-card--question {
+  background: #6bbfe5;
+}
+.qr-card--question .qr-q {
+  font-family: "Press Start 2P", monospace;
+  color: #ffed00;
+  -webkit-text-stroke: 0.75px #000;
+  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
+    -1px -1px 0 #000, 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
+  font-weight: 400;
+  font-size: 20px;
+}
+#qr-app.qr-app--fs .qr-card--question .qr-q {
+  font-size: clamp(18px, 3vw, 24px);
+}
+
+.qr-card--question .qr-opt {
+  background: #ffed00;
+  border-color: #e71d73;
+  color: #000;
+  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+.qr-card--question .qr-opt:hover,
+.qr-card--question .qr-opt:focus {
+  background: #fff066;
+  border-color: #e71d73;
+}
+
+/* =================== SELECTOR DE PERSONAJE =================== */
+.qr-card--select {
+  width: 560px;
+  height: 360px;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  justify-content: center;
+  padding: 12px 14px;
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.qr-select {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+.qr-select__item {
+  border: 4px solid var(--gray-dark);
+  background: #fff;
+  border-radius: 8px;
+  outline: 4px solid #fff;
+  box-shadow: 0 0 0 6px var(--gray-dark), 0 8px 0 var(--black);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-select__item:hover,
+.qr-select__item:focus {
+  border-color: var(--brand-dark);
+  background: #fdf8f1;
+}
+.qr-select__imgwrap {
+  width: 100%;
+  aspect-ratio: 1/1;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+}
+.qr-select__img {
+  image-rendering: pixelated;
+  max-width: 96%;
+  max-height: 96%;
+  width: auto;
+  height: auto;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .qr-card--select {
+    width: 90vw;
+    height: 420px;
+    padding: 10px 12px;
+  }
+  .qr-select {
+    gap: 8px;
+  }
+  .qr-select__item {
+    padding: 4px;
+    outline-width: 4px;
+  }
+  .qr-select__imgwrap {
+    padding: 2px;
+  }
+  .qr-select__img {
+    max-width: 97%;
+    max-height: 97%;
+  }
+}
+@media (max-width: 768px) and (orientation: landscape) {
+  .qr-card--select {
+    width: 96vw;
+    height: 300px;
+    padding: 10px 12px;
+  }
+  .qr-select {
+    gap: 8px;
+  }
+  .qr-select__item {
+    padding: 3px;
+    outline-width: 4px;
+  }
+  .qr-select__imgwrap {
+    padding: 2px;
+  }
+  .qr-select__img {
+    max-width: 98%;
+    max-height: 98%;
+  }
+}
+
+/* =================== FINAL =================== */
 .qr-end .qr-title {
   font-size: 22px;
   margin: 0 0 12px;
@@ -292,7 +619,7 @@ body {
   margin-top: 16px;
 }
 
-/* Honeypot */
+/* =================== HONEYPOT =================== */
 .qr-hp {
   position: absolute;
   left: -9999px;
@@ -301,7 +628,7 @@ body {
   opacity: 0;
 }
 
-/* ===== Virtual Pad ===== */
+/* =================== VIRTUAL PAD =================== */
 .qr-pad {
   position: fixed;
   left: 0;
@@ -339,7 +666,6 @@ body {
   background: rgba(208, 158, 85, 0.92);
   color: #fff;
 }
-
 .qr-pad--landscape {
   background: transparent;
 }
@@ -367,7 +693,7 @@ body {
   box-shadow: none;
 }
 
-/* Botón salir */
+/* Botón salir FS */
 .qr-exit {
   position: fixed;
   z-index: 10003;
@@ -422,7 +748,7 @@ body {
   opacity: 0.95;
 }
 
-/* Visibilidad */
+/* Visibilidad móvil */
 #qr-exit {
   display: none;
 }
@@ -452,10 +778,6 @@ body {
 #qr-app.qr-app--fs .qr-q {
   font-size: clamp(18px, 3vw, 24px);
 }
-#qr-app.qr-app--fs .qr-opt {
-  font-size: clamp(13px, 2.4vw, 16px);
-  padding: clamp(10px, 2.2vw, 14px) clamp(12px, 2.4vw, 16px);
-}
 
 /* HUD móvil */
 @media (max-width: 768px) {
@@ -467,7 +789,7 @@ body {
   }
 }
 
-/* Ocultar stage en móvil vertical fuera de FS, salvo modal inicio */
+/* Ocultar stage en móvil vertical FUERA de FS, salvo cuando hay modal abierto */
 @media (orientation: portrait) {
   .is-mobile #qr-app:not(.qr-app--fs) #qr-stage {
     display: none;
@@ -477,7 +799,7 @@ body {
   }
 }
 
-/* Botones pad en FS compactos */
+/* Botones pad compactos en FS */
 .is-mobile #qr-app.qr-app--fs .qr-pad__btn {
   min-width: clamp(40px, 9vw, 56px);
   min-height: clamp(40px, 9vw, 56px);
@@ -488,304 +810,7 @@ body {
   bottom: calc(28px + env(safe-area-inset-bottom));
 }
 
-/* Errores inline */
-.qr-error {
-  color: #8e2a2a;
-  font-size: 12px;
-  line-height: 1.3;
-  min-height: 14px;
-  margin-top: 4px;
-}
-.qr-input.is-invalid {
-  border-color: #8e2a2a;
-  box-shadow: 0 3px 0 #000, 0 0 0 2px rgba(142, 42, 42, 0.18) inset;
-}
-
-/* ===== Ventanas ===== */
-
-/* ——— INICIO (portada) SIN caja y MUCHO más grande, con borde negro redondeado ——— */
-.qr-card--start {
-  position: relative;
-  background: transparent !important;
-  border: 0 !important;
-  outline: none !important;
-  box-shadow: none !important;
-  width: auto;
-  max-width: none;
-  padding: 0;
-  border-radius: 0;
-  text-align: center;
-}
-.qr-start-cover {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-.qr-start-cover__img {
-  display: block;
-  /* ↑ AUMENTADA: prácticamente a tope de ancho, sin tocar bordes */
-  width: min(99%, 1400px);
-  height: auto;
-  margin: 0 auto;
-  border: 5px solid #000; /* borde negro */
-  border-radius: 8px; /* redondeado igual que menús */
-  box-shadow: none;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* Botón START centrado abajo y más grande (mismo tamaño que SEND) */
-.qr-start-btn-img {
-  position: absolute;
-  left: 50%;
-  bottom: 2.5%;
-  transform: translateX(-50%);
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  outline: none !important;
-  box-shadow: none !important;
-}
-.qr-start-btn-img__icon {
-  display: block;
-  width: min(680px, 96%); /* ↑ grande */
-  height: auto;
-  outline: none !important;
-  border: 0 !important;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-.qr-start-btn-img:focus,
-.qr-start-btn-img:focus-visible,
-.qr-start-btn-img:active {
-  outline: none !important;
-  box-shadow: none !important;
-}
-.qr-start-btn-img::-moz-focus-inner {
-  border: 0;
-}
-
-/* === FORM: igual tamaño que “Ceremonia” + inputs amarillos siempre === */
-.qr-card--form {
-  max-width: 640px;
-  width: calc(100% - 24px);
-  padding: 16px;
-  max-height: none;
-  overflow: visible;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-.qr-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-/* Inputs SIEMPRE amarillos (rellenos, foco y autofill) */
-.qr-card--form .qr-input,
-.qr-card--form .qr-input:focus,
-.qr-card--form .qr-input:active {
-  background-color: #ffed00 !important;
-  color: #000 !important;
-  border-color: #e71d73 !important;
-  -webkit-text-fill-color: #000 !important;
-}
-.qr-card--form .qr-input::placeholder {
-  color: rgba(0, 0, 0, 0.6);
-}
-.qr-card--form input.qr-input:-webkit-autofill,
-.qr-card--form input.qr-input:-webkit-autofill:hover,
-.qr-card--form input.qr-input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #000 !important;
-  -webkit-box-shadow: 0 0 0 1000px #ffed00 inset !important;
-  box-shadow: 0 0 0 1000px #ffed00 inset !important;
-  border: 4px solid #e71d73 !important;
-}
-
-/* Botón SEND (mismo tamaño que START) y sin rectángulo de foco */
-.qr-btn--img {
-  background: transparent;
-  border: none;
-  padding: 0;
-  margin-top: 10px;
-  cursor: pointer;
-  box-shadow: none;
-  -webkit-tap-highlight-color: transparent;
-  outline: none !important;
-}
-.qr-btn--img__icon {
-  display: block;
-  width: min(680px, 96%);
-  height: auto;
-  margin: 0 auto;
-  outline: none !important;
-  border: 0 !important;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-.qr-btn--img:focus,
-.qr-btn--img:focus-visible,
-.qr-btn--img:active {
-  outline: none !important;
-  box-shadow: none !important;
-}
-.qr-btn--img::-moz-focus-inner {
-  border: 0;
-}
-
-/* Consentimiento más grande */
-.qr-card--form .qr-consent {
-  font-size: 16px;
-  gap: 10px;
-}
-.qr-card--form .qr-consent input[type="checkbox"] {
-  width: 22px;
-  height: 22px;
-  transform: translateY(2px);
-}
-
-/* Política de privacidad */
-.qr-link,
-.qr-link:visited {
-  color: #1976d2;
-  text-decoration: underline;
-  font-weight: 600;
-}
-.qr-link:hover,
-.qr-link:focus {
-  text-decoration: underline;
-  filter: brightness(0.9);
-  outline: 0;
-}
-
-@media (max-width: 560px) {
-  .qr-form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 768px) and (orientation: landscape) {
-  .qr-card--form {
-    padding: 12px 14px;
-  }
-  .qr-card--form .qr-title {
-    font-size: 20px;
-    margin-bottom: 8px;
-  }
-  .qr-card--form .qr-row {
-    margin: 6px 0;
-  }
-  .qr-card--form .qr-input {
-    padding: 10px;
-    font-size: 13px;
-  }
-  .qr-card--form .qr-btn {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-}
-
-/* Selector personaje (sin gris, ver juego) */
-.qr-card--select {
-  width: 560px;
-  height: 360px;
-  max-width: 90vw;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: stretch;
-  justify-content: center;
-  padding: 12px 14px;
-  background: transparent !important;
-  border: 0 !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-.qr-select {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  width: 100%;
-}
-.qr-select__item {
-  border: 4px solid var(--gray-dark);
-  background: #fff;
-  border-radius: 8px;
-  outline: 4px solid #fff;
-  box-shadow: 0 0 0 6px var(--gray-dark), 0 8px 0 var(--black);
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.qr-select__item:hover,
-.qr-select__item:focus {
-  border-color: var(--brand-dark);
-  background: #fdf8f1;
-}
-.qr-select__imgwrap {
-  width: 100%;
-  aspect-ratio: 1/1;
-  display: grid;
-  place-items: center;
-  padding: 2px;
-}
-.qr-select__img {
-  image-rendering: pixelated;
-  max-width: 96%;
-  max-height: 96%;
-  width: auto;
-  height: auto;
-}
-@media (max-width: 768px) and (orientation: portrait) {
-  .qr-card--select {
-    width: 90vw;
-    height: 420px;
-    padding: 10px 12px;
-  }
-  .qr-select {
-    gap: 8px;
-  }
-  .qr-select__item {
-    padding: 4px;
-    outline-width: 4px;
-  }
-  .qr-select__imgwrap {
-    padding: 2px;
-  }
-  .qr-select__img {
-    max-width: 97%;
-    max-height: 97%;
-  }
-}
-@media (max-width: 768px) and (orientation: landscape) {
-  .qr-card--select {
-    width: 96vw;
-    height: 300px;
-    padding: 10px 12px;
-  }
-  .qr-select {
-    gap: 8px;
-  }
-  .qr-select__item {
-    padding: 3px;
-    outline-width: 4px;
-  }
-  .qr-select__imgwrap {
-    padding: 2px;
-  }
-  .qr-select__img {
-    max-width: 98%;
-    max-height: 98%;
-  }
-}
-
-/* Modo ancho escritorio */
+/* =================== ESCRITORIO ANCHO =================== */
 @media (min-width: 1024px) {
   #qr-app.qr-wide {
     max-width: 100vw;
@@ -803,7 +828,7 @@ body {
   }
 }
 
-/* Marca de agua */
+/* =================== MARCA DE AGUA =================== */
 .qr-stage::after {
   content: "";
   position: absolute;
@@ -825,80 +850,7 @@ body {
   }
 }
 
-/* ============ THEME SOLO PREGUNTAS Y FORMULARIO ============ */
-.qr-card--question {
-  background: #6bbfe5;
-}
-.qr-card--question .qr-q {
-  font-family: "Press Start 2P", monospace;
-  color: #ffed00;
-  -webkit-text-stroke: 0.75px #000;
-  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
-    -1px -1px 0 #000, 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
-  font-weight: 400;
-  font-size: 20px;
-}
-.qr-card--question .qr-opt {
-  background: #ffed00;
-  border-color: #e71d73;
-  color: #000;
-  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-}
-.qr-card--question .qr-opt:hover,
-.qr-card--question .qr-opt:focus {
-  background: #fff066;
-  border-color: #e71d73;
-}
-
-.qr-card--form {
-  background: #6bbfe5;
-}
-.qr-card--form .qr-title {
-  font-family: "Press Start 2P", monospace;
-  color: #ffed00;
-  -webkit-text-stroke: 1px #000;
-  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
-    -1px -1px 0 #000, 0 1px 0 #000, 1px 0 0 #000, 0 -1px 0 #000, -1px 0 0 #000;
-  font-weight: 400;
-}
-.qr-card--form label {
-  color: #000;
-  font-weight: 600;
-}
-
-/* Inputs amarillos (rellenos, foco y autofill) */
-.qr-card--form .qr-input,
-.qr-card--form .qr-input:focus,
-.qr-card--form .qr-input:active {
-  background-color: #ffed00 !important;
-  color: #000 !important;
-  border-color: #e71d73 !important;
-  -webkit-text-fill-color: #000 !important;
-}
-.qr-card--form .qr-input::placeholder {
-  color: rgba(0, 0, 0, 0.6);
-}
-.qr-card--form input.qr-input:-webkit-autofill,
-.qr-card--form input.qr-input:-webkit-autofill:hover,
-.qr-card--form input.qr-input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #000 !important;
-  -webkit-box-shadow: 0 0 0 1000px #ffed00 inset !important;
-  box-shadow: 0 0 0 1000px #ffed00 inset !important;
-  border: 4px solid #e71d73 !important;
-}
-
-/* Consentimiento más grande */
-.qr-card--form .qr-consent {
-  font-size: 16px;
-  gap: 10px;
-}
-.qr-card--form .qr-consent input[type="checkbox"] {
-  width: 22px;
-  height: 22px;
-  transform: translateY(2px);
-}
-
-/* ===== Overrides: borde único negro ===== */
+/* =================== BORDES UNIFICADOS =================== */
 .qr-card,
 .qr-hud,
 .qr-select__item,
@@ -936,18 +888,7 @@ body {
   border-width: 4px !important;
 }
 
-/* Pregunta: tamaño y contorno */
-.qr-card--question .qr-q {
-  font-size: 20px;
-  -webkit-text-stroke: 0.75px #000;
-  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000,
-    -1px -1px 0 #000;
-}
-
-/* Escala en fullscreen coherente preguntas/título */
-#qr-app.qr-app--fs .qr-card--question .qr-q {
-  font-size: clamp(18px, 3vw, 24px);
-}
+/* Tamaños coherentes extra */
 .qr-card--form .qr-title {
   font-size: 26px !important;
   letter-spacing: 0.4px;
@@ -956,14 +897,71 @@ body {
   font-size: clamp(20px, 3.2vw, 26px) !important;
 }
 
-/* Errores del formulario */
-.qr-card--form .qr-error {
-  color: #8e2a2a;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.35;
-  min-height: 16px;
+/* =================== ANIMACIONES =================== */
+/* Pulso de color (azul base -> amarillo suave) para el botón START */
+@keyframes qr-colorPulse {
+  0% {
+    filter: none;
+  }
+  100% {
+    filter: hue-rotate(180deg) saturate(1.1) brightness(1.1);
+  }
 }
-#qr-app.qr-app--fs .qr-card--form .qr-error {
-  font-size: clamp(13px, 2.6vw, 15px);
+
+/* Respeto preferencia del usuario para reducir animaciones */
+@media (prefers-reduced-motion: reduce) {
+  .qr-start-btn-img__icon {
+    animation: none;
+  }
 }
+
+/* ===================================================================== */
+/* =================== FIX DEFINITIVO BOTÓN START ======================= */
+/* Control total vía variables (mueve/tamaño a voluntad) */
+:root {
+  --start-bottom: 6%; /* distancia al suelo */
+  --start-width: clamp(120px, 12vw, 180px);
+}
+
+/* Wrapper que centra y ancla al fondo del stage */
+#qr-stage .qr-start-cta2 {
+  position: absolute;
+  top: 86%; /* centrado vertical */
+  right: -36%; /* separación del borde derecho */
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: 10010;
+}
+
+/* Botón nuevo (no hereda estilos viejos conflictivos) */
+#qr-stage .qr-start-btn2 {
+  all: unset;
+  display: inline-block;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+#qr-stage .qr-start-btn2:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+}
+
+#qr-stage .qr-start-btn2__icon {
+  display: block;
+  width: var(--start-width);
+  max-width: 92vw;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
+}
+
+/* Neutraliza antiguas reglas del antiguo botón por si quedan en caché */
+#qr-stage .qr-start-btn-img,
+#qr-stage .qr-start-btn-img__icon {
+  position: static !important;
+  transform: none !important;
+  width: auto !important;
+}
+/* ===================================================================== */

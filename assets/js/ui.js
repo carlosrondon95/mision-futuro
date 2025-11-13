@@ -1,4 +1,3 @@
-// assets/js/ui.js
 (function () {
   // ===== Util: total de puertas (preguntas + formulario final) =====
   function getTotalDoors() {
@@ -6,7 +5,6 @@
       ? window.QRData.QUESTIONS.length
       : 0;
   }
-
   function setBadge(currentOneBased) {
     var badge = document.querySelector(".qr-badge");
     var total = getTotalDoors();
@@ -16,7 +14,6 @@
     }
   }
   setBadge(1);
-
   window.addEventListener("qr:station", function (ev) {
     var idx =
       ev && ev.detail && typeof ev.detail.index === "number"
@@ -64,6 +61,7 @@
     markStageModalOpen(!!any);
     emit("qr:modal:close");
   }
+
   function isMobile() {
     return document.body.classList.contains("is-mobile");
   }
@@ -95,50 +93,59 @@
     });
   })();
 
-  // Ajuste de escala
+  // Ajuste de escala para tarjetas (NO se usa en portada para evitar blur)
   function fitCardToStage(card, minScale = 0.85) {
     if (!card || !stageEl) return;
     const rectStage = stageEl.getBoundingClientRect();
-    const padW = 16,
-      padH = 16;
-    const availW = Math.max(1, rectStage.width - padW);
-    const availH = Math.max(1, rectStage.height - padH);
-
+    const availW = Math.max(1, rectStage.width - 16);
+    const availH = Math.max(1, rectStage.height - 16);
     card.style.transform = "none";
     card.style.transformOrigin = "center center";
     card.style.willChange = "transform";
-
     const rect = card.getBoundingClientRect();
     const scaleW = availW / Math.max(1, rect.width);
     const scaleH = availH / Math.max(1, rect.height);
     const scale = Math.min(1, Math.max(minScale, Math.min(scaleW, scaleH)));
-
     if (scale < 1) card.style.transform = `scale(${scale})`;
   }
 
-  // ===== Pantalla de inicio (portada + botón start.png) =====
+  // ===== Gestor del fondo en portada (pantalla completa, nítida) =====
+  let _prevStageStyle = null;
+  function applyStartBg() {
+    if (!stageEl) return;
+    // Guardamos estilo inline previo para restaurarlo luego
+    _prevStageStyle = stageEl.getAttribute("style") || "";
+    stageEl.classList.add("qr-stage--start");
+    // Fondo a pantalla completa con inicio.jpg
+    stageEl.style.background = `url("${ASSETS}img/inicio.jpg") center / cover no-repeat, #000`;
+  }
+  function clearStartBg() {
+    if (!stageEl) return;
+    stageEl.classList.remove("qr-stage--start");
+    if (_prevStageStyle !== null) {
+      stageEl.setAttribute("style", _prevStageStyle);
+      _prevStageStyle = null;
+    } else {
+      stageEl.removeAttribute("style");
+    }
+  }
+
+  // ===== Pantalla de inicio (V2 estable + colocación por variables CSS) =====
   function startModal(onPlay) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
+    // Aplicamos fondo de portada a todo el stage
+    applyStartBg();
+
     const modal = document.createElement("div");
-    modal.className = "qr-modal qr-modal--start"; // SIN gris: fondo transparente
+    modal.className = "qr-modal qr-modal--start";
 
     const card = document.createElement("div");
     card.className = "qr-card qr-card--start";
-
     card.innerHTML = `
-      <div class="qr-start-cover">
-        <img
-          src="${ASSETS}img/portada.png"
-          alt="Pantalla de inicio"
-          class="qr-start-cover__img"
-        />
-        <button class="qr-start-btn-img" id="qrStartBtn" type="button" aria-label="Jugar">
-          <img
-            src="${ASSETS}img/buttons/start.png"
-            alt="Jugar"
-            class="qr-start-btn-img__icon"
-          />
+      <div class="qr-start-cta2">
+        <button class="qr-start-btn2" id="qrStartBtn" type="button" aria-label="Jugar">
+          <img src="${ASSETS}img/buttons/start.png" alt="Jugar" class="qr-start-btn2__icon" />
         </button>
       </div>
     `;
@@ -148,24 +155,11 @@
     markStageModalOpen(true);
     emit("qr:modal:open");
 
-    const refit = () => requestAnimationFrame(() => fitCardToStage(card, 0.95));
-    refit();
-    window.addEventListener("resize", refit);
-    window.addEventListener("orientationchange", refit);
-    window.addEventListener("qr:viewport:change", refit);
-    window.addEventListener(
-      "qr:modal:close",
-      () => {
-        window.removeEventListener("resize", refit);
-        window.removeEventListener("orientationchange", refit);
-        window.removeEventListener("qr:viewport:change", refit);
-      },
-      { once: true }
-    );
-
     const cleanup = () => {
       window.removeEventListener("keydown", keyHandler);
       close();
+      // Restauramos el fondo del stage para permitir ver fondo.png en selección
+      clearStartBg();
     };
 
     async function requestFSNow() {
@@ -196,27 +190,23 @@
     window.addEventListener("keydown", keyHandler);
   }
 
-  // ===== Selección de personaje =====
+  // ===== Selección de personaje (detrás: fondo.png del stage) =====
   function selectHeroModal(maleUrl, femaleUrl, onSelect) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
     const modal = document.createElement("div");
-    modal.className = "qr-modal qr-modal--select"; // SIN gris: fondo transparente
+    modal.className = "qr-modal qr-modal--select";
+
     const card = document.createElement("div");
     card.className = "qr-card qr-card--select";
-
     card.innerHTML = `
       <h3 class="qr-title">Elige tu personaje</h3>
       <div class="qr-select" role="listbox" aria-label="Elige personaje">
         <button class="qr-select__item" id="selMale" aria-label="Hombre">
-          <div class="qr-select__imgwrap">
-            <img class="qr-select__img" src="${maleUrl}" alt="Hombre" />
-          </div>
+          <div class="qr-select__imgwrap"><img class="qr-select__img" src="${maleUrl}" alt="Hombre" /></div>
         </button>
         <button class="qr-select__item" id="selFemale" aria-label="Mujer">
-          <div class="qr-select__imgwrap">
-            <img class="qr-select__img" src="${femaleUrl}" alt="Mujer" />
-          </div>
+          <div class="qr-select__imgwrap"><img class="qr-select__img" src="${femaleUrl}" alt="Mujer" /></div>
         </button>
       </div>
     `;
@@ -248,7 +238,6 @@
       close();
       onSelect && onSelect(g);
     };
-
     card
       .querySelector("#selMale")
       .addEventListener("click", () => pick("hombre"));
@@ -277,16 +266,16 @@
   // ===== Pregunta =====
   function questionModal(qObj, onAnswer) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
+
     const modal = document.createElement("div");
     modal.className = "qr-modal";
+
     const card = document.createElement("div");
     card.className = "qr-card qr-card--question";
-
     card.innerHTML = `
       <div class="qr-q">${qObj.q}</div>
       <div class="qr-opts"></div>
     `;
-
     const opts = card.querySelector(".qr-opts");
     qObj.opts.forEach((op) => {
       const b = document.createElement("button");
@@ -327,13 +316,12 @@
 
     const modal = document.createElement("div");
     modal.className = "qr-modal";
+
     const card = document.createElement("div");
     card.className = "qr-card qr-card--form";
-
     card.innerHTML = `
       <form id="qrLeadForm" novalidate>
         <h3 class="qr-title">📩 TUS DATOS</h3>
-
         <div class="qr-form-grid">
           <div class="qr-row">
             <label for="fName">Nombre</label>
@@ -346,13 +334,11 @@
             <div class="qr-error" id="errPhone"></div>
           </div>
         </div>
-
         <div class="qr-row">
           <label for="fEmail">Email</label>
           <input class="qr-input" id="fEmail" type="email" placeholder="Email" autocomplete="email" inputmode="email">
           <div class="qr-error" id="errEmail"></div>
         </div>
-
         <div class="qr-row qr-consent">
           <label>
             <input id="fConsent" type="checkbox">
@@ -360,7 +346,6 @@
           </label>
           <div class="qr-error" id="errConsent"></div>
         </div>
-
         <div class="qr-start-actions">
           <button class="qr-btn--img" id="btnSend" type="submit" aria-label="Enviar">
             <img src="${ASSETS}img/buttons/send.png" alt="Enviar" class="qr-btn--img__icon" />
@@ -401,10 +386,12 @@
     const mailI = card.querySelector("#fEmail");
     const phoneI = card.querySelector("#fPhone");
     const consI = card.querySelector("#fConsent");
+
     const errName = card.querySelector("#errName");
     const errEmail = card.querySelector("#errEmail");
     const errPhone = card.querySelector("#errPhone");
     const errCons = card.querySelector("#errConsent");
+
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
     function setErr(inputEl, errEl, msg) {
@@ -416,6 +403,7 @@
         inputEl && inputEl.classList.remove("is-invalid");
       }
     }
+
     function validateName() {
       const v = (nameI.value || "").trim();
       if (!v) return setErr(nameI, errName, "El nombre es obligatorio."), false;
@@ -424,12 +412,14 @@
       setErr(nameI, errName, "");
       return true;
     }
+
     function sanitizePhone() {
       let v = phoneI.value.replace(/[^\d+]/g, "");
       if (v.includes("+"))
         v = "+" + v.replace(/[+]/g, "").replace(/[^\d]/g, "");
       phoneI.value = v;
     }
+
     function validatePhone() {
       sanitizePhone();
       const v = phoneI.value.trim();
@@ -456,6 +446,7 @@
       setErr(phoneI, errPhone, "");
       return true;
     }
+
     function validateEmail() {
       const v = (mailI.value || "").trim();
       if (!v) return setErr(mailI, errEmail, "El email es obligatorio."), false;
@@ -464,6 +455,7 @@
       setErr(mailI, errEmail, "");
       return true;
     }
+
     function validateConsent() {
       if (!consI.checked)
         return (
@@ -473,6 +465,7 @@
       setErr(consI, errCons, "");
       return true;
     }
+
     function validateAll() {
       const a = validateName(),
         b = validateEmail(),
@@ -516,9 +509,9 @@
 
     const modal = document.createElement("div");
     modal.className = "qr-modal";
+
     const card = document.createElement("div");
     card.className = "qr-card qr-end";
-
     card.innerHTML = `
       <h3 class="qr-title">🎖 Ceremonia de Asignación</h3>
       <p class="qr-end-lead"><strong>Tu perfil ideal:</strong> ${top1}</p>
