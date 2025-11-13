@@ -964,4 +964,16 @@ body {
   transform: none !important;
   width: auto !important;
 }
+
+/* ===== Restaurar color del borde de las respuestas de preguntas ===== */
+.qr-card--question .qr-opt {
+  border-color: #e71d73 !important; /* Rosa (o el color que tú quieras) */
+}
+
+/* Hover / focus */
+.qr-card--question .qr-opt:hover,
+.qr-card--question .qr-opt:focus {
+  border-color: #e71d73 !important;
+}
+
 /* ===================================================================== */
