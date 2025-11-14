@@ -1,5 +1,5 @@
 (function () {
-  // ===== Util: total de puertas (preguntas + formulario final) =====
+  // ===== Util: total de puertas =====
   function getTotalDoors() {
     return window.QRData && Array.isArray(window.QRData.QUESTIONS)
       ? window.QRData.QUESTIONS.length
@@ -15,10 +15,7 @@
   }
   setBadge(1);
   window.addEventListener("qr:station", function (ev) {
-    var idx =
-      ev && ev.detail && typeof ev.detail.index === "number"
-        ? ev.detail.index
-        : 0;
+    var idx = ev?.detail?.index ?? 0;
     setBadge(idx + 1);
   });
 
@@ -76,7 +73,7 @@
     );
   }
 
-  // Bloquear scroll con espacio
+  // Bloquear scroll con Space fuera de inputs
   (function installSpaceScrollGuard() {
     const handler = (e) => {
       const code = e.code || e.key;
@@ -93,7 +90,7 @@
     });
   })();
 
-  // Ajuste de escala para tarjetas (NO se usa en portada para evitar blur)
+  // Ajuste de escala para tarjetas
   function fitCardToStage(card, minScale = 0.85) {
     if (!card || !stageEl) return;
     const rectStage = stageEl.getBoundingClientRect();
@@ -109,16 +106,41 @@
     if (scale < 1) card.style.transform = `scale(${scale})`;
   }
 
-  // ===== Gestor del fondo en portada (pantalla completa, nítida) =====
+  // ===== Helpers de orientación =====
+  function isPortrait() {
+    return window.matchMedia("(orientation: portrait)").matches;
+  }
+
+  // ===== Portada: elección de imagen (portrait: portadaresponsive.jpg, resto: inicio.jpg) =====
+  function pickStartImageSrc() {
+    if (isMobile() && isPortrait()) {
+      return `${ASSETS}img/portadaresponsive.jpg`;
+    }
+    return `${ASSETS}img/inicio.jpg`;
+  }
+
+  // ===== Aplicar/actualizar fondo de portada vía variables CSS (no sobrescribir con inline "shorthand") =====
   let _prevStageStyle = null;
+
   function applyStartBg() {
     if (!stageEl) return;
-    // Guardamos estilo inline previo para restaurarlo luego
     _prevStageStyle = stageEl.getAttribute("style") || "";
     stageEl.classList.add("qr-stage--start");
-    // Fondo a pantalla completa con inicio.jpg
-    stageEl.style.background = `url("${ASSETS}img/inicio.jpg") center / cover no-repeat, #000`;
+    stageEl.style.setProperty(
+      "--start-bg-img",
+      `url("${pickStartImageSrc()}")`
+    );
+    // tamaño se controla desde CSS con --start-bg-size (ver media queries)
   }
+
+  function updateStartBgImageOnly() {
+    if (!stageEl || !stageEl.classList.contains("qr-stage--start")) return;
+    stageEl.style.setProperty(
+      "--start-bg-img",
+      `url("${pickStartImageSrc()}")`
+    );
+  }
+
   function clearStartBg() {
     if (!stageEl) return;
     stageEl.classList.remove("qr-stage--start");
@@ -130,11 +152,11 @@
     }
   }
 
-  // ===== Pantalla de inicio (V2 estable + colocación por variables CSS) =====
+  // ===== Pantalla de inicio =====
   function startModal(onPlay) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
-    // Aplicamos fondo de portada a todo el stage
+    // Fondo de portada a todo el stage (con escala controlada por CSS)
     applyStartBg();
 
     const modal = document.createElement("div");
@@ -151,24 +173,33 @@
     `;
 
     modal.appendChild(card);
-    root.appendChild(modal);
+    (document.querySelector("#qr-stage #qr-modal-root") || root).appendChild(
+      modal
+    );
     markStageModalOpen(true);
     emit("qr:modal:open");
 
+    // Mantener la portada correcta si rota el móvil (sin tocar estilos previos)
+    const onOrient = () => updateStartBgImageOnly();
+    window.addEventListener("orientationchange", onOrient);
+
     const cleanup = () => {
       window.removeEventListener("keydown", keyHandler);
+      window.removeEventListener("orientationchange", onOrient);
       close();
-      // Restauramos el fondo del stage para permitir ver fondo.png en selección
-      clearStartBg();
+      clearStartBg(); // volvemos a fondo del juego para selección/juego
     };
 
     async function requestFSNow() {
+      // No forzamos en escritorio; sólo si es móvil y no está en FS
       if (!isMobile()) return;
       try {
         if (!document.fullscreenElement && appEl && appEl.requestFullscreen) {
           await appEl.requestFullscreen({ navigationUI: "hide" });
         }
-      } catch (_) {}
+      } catch (_) {
+        /* no-op */
+      }
     }
 
     const start = async () => {
@@ -190,7 +221,7 @@
     window.addEventListener("keydown", keyHandler);
   }
 
-  // ===== Selección de personaje (detrás: fondo.png del stage) =====
+  // ===== Selección de personaje =====
   function selectHeroModal(maleUrl, femaleUrl, onSelect) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -212,7 +243,9 @@
     `;
 
     modal.appendChild(card);
-    root.appendChild(modal);
+    (document.querySelector("#qr-stage #qr-modal-root") || root).appendChild(
+      modal
+    );
     markStageModalOpen(true);
     emit("qr:modal:open");
 
@@ -290,7 +323,9 @@
     });
 
     modal.appendChild(card);
-    root.appendChild(modal);
+    (document.querySelector("#qr-stage #qr-modal-root") || root).appendChild(
+      modal
+    );
     markStageModalOpen(true);
     emit("qr:modal:open");
 
@@ -310,7 +345,7 @@
     );
   }
 
-  // ===== Formulario (TUS DATOS) =====
+  // ===== Formulario =====
   function formModal(onSubmit) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -528,7 +563,9 @@
     `;
 
     modal.appendChild(card);
-    root.appendChild(modal);
+    (document.querySelector("#qr-stage #qr-modal-root") || root).appendChild(
+      modal
+    );
     markStageModalOpen(true);
     emit("qr:modal:open");
 
@@ -559,4 +596,30 @@
     endingModal,
     close,
   };
+})();
+
+/* =================== CONTROLES JS PARA POSICIÓN DEL START EN MÓVIL =================== */
+(function () {
+  const R = document.documentElement.style;
+  function setVar(name, val) {
+    if (val == null) return;
+    const v = typeof val === "number" ? val + "%" : String(val);
+    R.setProperty(name, v);
+  }
+
+  const controls = {
+    /** Ajuste rápido en móvil vertical (portrait) */
+    setStartPosPortrait({ left, bottom } = {}) {
+      setVar("--start-left-portrait", left);
+      setVar("--start-bottom-portrait", bottom);
+    },
+    /** Ajuste rápido en móvil horizontal (landscape) */
+    setStartPosLandscape({ left, bottom } = {}) {
+      setVar("--start-left-landscape", left);
+      setVar("--start-bottom-landscape", bottom);
+    },
+  };
+
+  window.QRUI = window.QRUI || {};
+  window.QRUI.controls = Object.assign(window.QRUI.controls || {}, controls);
 })();

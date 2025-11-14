@@ -1,4 +1,3 @@
-// assets/js/viewport.js
 (function () {
   class QRViewport {
     constructor(canvas, stage, pad) {
@@ -47,8 +46,12 @@
           ? this.pad.offsetHeight || 0
           : 0;
 
-      const availW = ww - 16;
-      const availH = vh - padH - 16;
+      /* --- Ajuste: hacemos el screen un pelín más grande en móvil reduciendo marcos --- */
+      // Antes restabas 16px; ahora 8px para ganar área sin afectar escritorio.
+      const margin = 8;
+
+      const availW = ww - margin;
+      const availH = vh - padH - margin;
 
       const scale = Math.min(availW / this.baseW, availH / this.baseH);
 

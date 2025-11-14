@@ -10,6 +10,19 @@
 
   --primary: var(--brand-light);
   --ink: var(--gray-dark);
+
+  /* Desktop/base: NO TOCAR (posiciones que has fijado) */
+  --start-bottom: 6%;
+  --start-width: clamp(120px, 12vw, 180px);
+
+  /* Ajustes exclusivos de móvil (puedes cambiarlos por JS o CSS) */
+  --start-left-portrait: 50%;
+  --start-bottom-portrait: 7%;
+  --start-left-landscape: 50%;
+  --start-bottom-landscape: 6%;
+
+  /* Escala de la portada en modo inicio (controlada por CSS) */
+  --start-bg-size: cover; /* escritorio y móvil horizontal por defecto */
 }
 
 /* =================== BASE =================== */
@@ -95,7 +108,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Fondo por defecto del juego (se verá en selección y durante el juego) */
   background: url("../img/fondo.jpg") center / cover no-repeat, #87ceeb;
   border: 8px solid var(--gray-dark);
   outline: 6px solid #fff;
@@ -113,10 +125,14 @@ body {
   touch-action: none;
 }
 
-/* En portada, el fondo lo pinta JS con inicio.jpg a pantalla completa.
-   Aquí sólo evitamos el pixelado para máxima nitidez de esa imagen. */
-#qr-stage.qr-stage--start {
+/* ====== Modo portada: la imagen la gestiona CSS con variables ====== */
+.qr-stage.qr-stage--start {
   image-rendering: auto !important;
+  background-color: #000;
+  background-image: var(--start-bg-img);
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  background-size: var(--start-bg-size);
 }
 
 /* =================== MODALES =================== */
@@ -130,7 +146,7 @@ body {
   z-index: 10006;
 }
 
-/* INICIO y SELECCIÓN: sin gris, se ve el fondo del stage */
+/* INICIO y SELECCIÓN sin velo gris */
 .qr-modal--start,
 .qr-modal--select {
   background: transparent !important;
@@ -138,8 +154,6 @@ body {
 }
 
 /* ===== PORTADA (INICIO) ===== */
-
-/* Tarjeta de inicio ocupando todo el stage */
 .qr-card--start {
   position: absolute;
   inset: 0;
@@ -155,75 +169,43 @@ body {
   justify-content: center;
 }
 
-/* Contenedor de la imagen + botón: ocupa todo el screen */
-.qr-start-cover {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* CENTRO horizontal del screen */
-  justify-content: flex-end; /* colocamos el contenido abajo */
-  padding-bottom: 8%; /* ajusta aquí la altura del botón */
-}
-
-/* inicio.jpg */
-.qr-start-cover__img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* Botón START centrado horizontalmente en el stage, bajo el cuadro de texto */
-.qr-start-btn-img {
+/* START: posición base (ESCRITORIO). NO TOCAR. */
+#qr-stage .qr-start-cta2 {
   position: absolute;
-  left: 50%; /* punto medio exacto del stage */
-  bottom: 8%; /* ajusta altura desde el suelo */
-  transform: translateX(-50%); /* centrado real respecto al propio ancho */
+  left: 123%;
+  bottom: 8%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: 10010;
+}
 
-  background: transparent;
-  border: none;
-  padding: 0;
+/* Tamaño del botón */
+#qr-stage .qr-start-btn2__icon {
+  width: var(--start-width);
+  height: auto;
+}
+
+/* Botón (limpio de herencias) */
+#qr-stage .qr-start-btn2 {
+  all: unset;
+  display: inline-block;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  outline: none !important;
-  box-shadow: none !important;
-  z-index: 10; /* asegura que quede por encima de todo */
 }
-
-.qr-start-btn-img__icon {
+#qr-stage .qr-start-btn2:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+}
+#qr-stage .qr-start-btn2__icon {
   display: block;
-  width: clamp(180px, 18vw, 260px); /* tamaño fijo relativo al viewport */
+  width: var(--start-width);
+  max-width: 92vw;
   height: auto;
   user-select: none;
   -webkit-user-drag: none;
   animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
-}
-
-.qr-start-btn-img:focus,
-.qr-start-btn-img:focus-visible,
-.qr-start-btn-img:active {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.qr-start-btn-img__icon {
-  display: block;
-  width: min(680px, 96%);
-  height: auto;
-  user-select: none;
-  -webkit-user-drag: none;
-  animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
-}
-
-.qr-start-btn-img:focus,
-.qr-start-btn-img:focus-visible,
-.qr-start-btn-img:active {
-  outline: none !important;
-  box-shadow: none !important;
 }
 
 /* =================== TARJETA BASE / PREGUNTAS / FORM =================== */
@@ -356,7 +338,7 @@ body {
   font-weight: 600;
 }
 
-/* Inputs SIEMPRE amarillos (relleno, foco y autofill) */
+/* Inputs SIEMPRE amarillos */
 .qr-card--form .qr-input,
 .qr-card--form .qr-input:focus,
 .qr-card--form .qr-input:active {
@@ -473,17 +455,16 @@ body {
 #qr-app.qr-app--fs .qr-card--question .qr-q {
   font-size: clamp(18px, 3vw, 24px);
 }
-
 .qr-card--question .qr-opt {
   background: #ffed00;
-  border-color: #e71d73;
+  border-color: #e71d73 !important;
   color: #000;
   font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 }
 .qr-card--question .qr-opt:hover,
 .qr-card--question .qr-opt:focus {
   background: #fff066;
-  border-color: #e71d73;
+  border-color: #e71d73 !important;
 }
 
 /* =================== SELECTOR DE PERSONAJE =================== */
@@ -789,7 +770,7 @@ body {
   }
 }
 
-/* Ocultar stage en móvil vertical FUERA de FS, salvo cuando hay modal abierto */
+/* Ocultar stage en móvil vertical FUERA de FS, salvo con modal abierto */
 @media (orientation: portrait) {
   .is-mobile #qr-app:not(.qr-app--fs) #qr-stage {
     display: none;
@@ -898,7 +879,6 @@ body {
 }
 
 /* =================== ANIMACIONES =================== */
-/* Pulso de color (azul base -> amarillo suave) para el botón START */
 @keyframes qr-colorPulse {
   0% {
     filter: none;
@@ -907,73 +887,75 @@ body {
     filter: hue-rotate(180deg) saturate(1.1) brightness(1.1);
   }
 }
-
-/* Respeto preferencia del usuario para reducir animaciones */
 @media (prefers-reduced-motion: reduce) {
-  .qr-start-btn-img__icon {
+  #qr-stage .qr-start-btn2__icon {
     animation: none;
   }
 }
 
-/* ===================================================================== */
-/* =================== FIX DEFINITIVO BOTÓN START ======================= */
-/* Control total vía variables (mueve/tamaño a voluntad) */
-:root {
-  --start-bottom: 6%; /* distancia al suelo */
-  --start-width: clamp(120px, 12vw, 180px);
+/* =================== AJUSTES EXCLUSIVOS MÓVIL =================== */
+
+@media (max-width: 1024px) and (orientation: portrait) {
+  /* Botón START: tamaño y posición en horizontal */
+  :root {
+    --start-width: clamp(180px, 25vw, 300px);
+    --start-bottom: 5%;
+  }
+
+  #qr-app.qr-app--fs {
+    /* Menos padding => más área para el stage */
+    padding: max(4px, env(safe-area-inset-top)) 4px
+      calc(4px + env(safe-area-inset-bottom)) 4px;
+  }
+
+  .qr-stage {
+    /* Más alto en horizontal: bordes superior/inferior más separados */
+    height: 72vh; /* AJUSTA AQUÍ LA ALTURA DEL STAGE EN HORIZONTAL */
+    max-width: 100vw;
+  }
+
+  #qr-stage .qr-start-cta2 {
+    left: var(--start-left-landscape) !important; /* POSICIÓN X HORIZONTAL */
+    bottom: var(
+      --start-bottom-landscape
+    ) !important; /* POSICIÓN Y HORIZONTAL */
+    transform: translateX(-50%) !important;
+  }
 }
 
-/* Wrapper que centra y ancla al fondo del stage */
-#qr-stage .qr-start-cta2 {
-  position: absolute;
-  top: 86%; /* centrado vertical */
-  right: -36%; /* separación del borde derecho */
-  transform: translateY(-50%);
-  display: flex;
-  justify-content: center;
-  pointer-events: auto;
-  z-index: 10010;
-}
+/* AJUSTES PARA MÓVIL HORIZONTAL (LANDSCAPE) */
+@media (max-width: 1024px) and (orientation: landscape) {
+  /* Aquí mandas tú en horizontal móvil/tablet pequeña */
 
-/* Botón nuevo (no hereda estilos viejos conflictivos) */
-#qr-stage .qr-start-btn2 {
-  all: unset;
-  display: inline-block;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-#qr-stage .qr-start-btn2:focus-visible {
-  outline: 3px solid #000;
-  outline-offset: 2px;
-}
+  /* Tamaño del botón START en horizontal */
+  :root {
+    --start-width: clamp(
+      80px,
+      25vw,
+      110px
+    ); /* ENSANCHA/EMPEQUEÑECE EL BOTÓN AQUÍ */
+  }
 
-#qr-stage .qr-start-btn2__icon {
-  display: block;
-  width: var(--start-width);
-  max-width: 92vw;
-  height: auto;
-  user-select: none;
-  -webkit-user-drag: none;
-  animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
-}
+  /* Stage más grande en la página (bordes más separados) */
+  #qr-app {
+    max-width: 100vw;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 
-/* Neutraliza antiguas reglas del antiguo botón por si quedan en caché */
-#qr-stage .qr-start-btn-img,
-#qr-stage .qr-start-btn-img__icon {
-  position: static !important;
-  transform: none !important;
-  width: auto !important;
-}
+  #qr-stage {
+    width: 100%;
+    max-width: 100%;
+    height: 72vh; /* <<< ENSANCHA VERTICALMENTE EL STAGE AQUÍ */
+    margin: 0 auto;
+  }
 
-/* ===== Restaurar color del borde de las respuestas de preguntas ===== */
-.qr-card--question .qr-opt {
-  border-color: #e71d73 !important; /* Rosa (o el color que tú quieras) */
+  /* MÓVIL HORIZONTAL: mover SOLO el botón START */
+  @media (max-width: 1024px) and (orientation: landscape) {
+    body.is-mobile #qr-stage .qr-start-cta2 {
+      left: 63%; /* posición horizontal (50% = centrado) */
+      bottom: 6%; /* altura respecto al suelo */
+      transform: translateX(-50%);
+    }
+  }
 }
-
-/* Hover / focus */
-.qr-card--question .qr-opt:hover,
-.qr-card--question .qr-opt:focus {
-  border-color: #e71d73 !important;
-}
-
-/* ===================================================================== */
