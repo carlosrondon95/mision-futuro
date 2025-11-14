@@ -96,7 +96,7 @@ body {
   align-items: center;
   justify-content: center;
   /* Fondo por defecto del juego (se verá en selección y durante el juego) */
-  background: url("../img/fondo.png") center / cover no-repeat, #87ceeb;
+  background: url("../img/fondo.jpg") center / cover no-repeat, #87ceeb;
   border: 8px solid var(--gray-dark);
   outline: 6px solid #fff;
   box-shadow: 0 0 0 6px var(--gray-dark), 0 8px 0 var(--black);
@@ -105,7 +105,7 @@ body {
   min-height: 200px;
 }
 .qr-stage--mobile {
-  background: url("../img/fondo.png") center / cover no-repeat, #000;
+  background: url("../img/fondo.jpg") center / cover no-repeat, #000;
 }
 #qr-canvas {
   display: block;

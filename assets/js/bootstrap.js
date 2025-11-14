@@ -51,7 +51,7 @@
     ]);
     return { idle, stepR, stepL, jump };
   }
-  const preloadBg = () => loadImage(`${BASE}assets/img/fondo.png`);
+  const preloadBg = () => loadImage(`${BASE}assets/img/fondo.jpg`);
   const preloadDoor = () => loadImage(`${BASE}assets/img/puerta.png`);
   const preloadCopa = () => loadImage(`${BASE}assets/img/copa.png`);
   const preloadObstacle = () => loadImage(`${BASE}assets/img/obstaculo.png`);
