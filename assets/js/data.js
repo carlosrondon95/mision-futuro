@@ -47,17 +47,17 @@
     {
       id: "physical",
       q: "¿Aceptarías pruebas físicas durante la oposición?",
-      opts: ["Sí", "Prefiero evitarlas"],
+      opts: ["Sí", "Prefiero evitarlas", "Me es indiferente"], // ← añadido
     },
     {
       id: "maneuvers",
       q: "¿Te interesan las maniobras?",
-      opts: ["Sí", "Prefiero evitarlas"],
+      opts: ["Sí", "Prefiero evitarlas", "Me es indiferente"], // ← añadido
     },
     {
       id: "contact",
       q: "¿Quieres un trabajo con contacto directo con personas?",
-      opts: ["Sí", "No"],
+      opts: ["Sí", "No", "Me es indiferente"], // ← añadido
     },
     {
       id: "mode",
@@ -308,20 +308,43 @@
           add(score, "FORVIDE", 3);
           addJuris(score, "Ejecutiva", 2);
         }
+        // NUEVO: indiferente (reparto suave y neutro)
+        if (normalize("me es indiferente") === v) {
+          addJuris(score, "Básica", 1);
+          addJuris(score, "Ejecutiva", 1); // efecto neto ≈ +1 a JURISPOL
+          add(score, "FORVIDE", 1);
+          add(score, "AGE360", 1);
+        }
         break;
       }
 
       // 7) MANIOBRAS
       case "maneuvers": {
-        if (normalize("si") === v || normalize("sí") === v) {
-          add(score, "MÉTODOS", 3); // SOLO MÉTODOS (equilibrado)
+        const isYes = v === normalize("si") || v === normalize("sí");
+        const isNo = v === normalize("prefiero evitarlas");
+        const isInd = v === normalize("me es indiferente");
+
+        if (isYes) {
+          add(score, "MÉTODOS", 3);
           score.__flags.maneuversYes = true;
-        } else if (normalize("prefiero evitarlas") === v) {
-          // Efecto suave
+        } else if (isNo) {
+          // efecto suave y muy repartido
           add(score, "PREFORTIA", 1);
           add(score, "FORVIDE", 1);
           add(score, "AGE360", 1);
           add(score, "DOZENTY", 1);
+          addJuris(score, "Básica", 1);
+          addJuris(score, "Ejecutiva", 1);
+        } else if (isInd) {
+          // <<< AQUÍ EL AJUSTE >>>
+          add(score, "PREFORTIA", 1);
+          add(score, "FORVIDE", 1);
+          add(score, "AGE360", 1);
+          add(score, "DOZENTY", 1);
+
+          // SUBIR MÉTODOS RESPECTO AL RESTO
+          add(score, "MÉTODOS", 2); // antes 1 → ahora 2
+
           addJuris(score, "Básica", 1);
           addJuris(score, "Ejecutiva", 1);
         }
@@ -338,8 +361,11 @@
           add(score, "AGE360", 1);
           add(score, "MÉTODOS", 1);
           add(score, "DOZENTY", 1);
-        } else {
+        } else if (normalize("no") === v) {
           add(score, "AGE360", 1); // ambas válidas en AGE360
+        } else if (normalize("me es indiferente") === v) {
+          add(score, "AGE360", 1);
+          add(score, "FORVIDE", 1);
         }
         break;
       }
@@ -486,6 +512,9 @@
     const chosen = takeSecond ? candidateKeys.slice(0, 2) : [candidateKeys[0]];
 
     function decorateName(key) {
+      const b = (score.__juris && score.__juris["Básica"]) || 0;
+      const e = (score.__juris && score.__juris["Ejecutiva"]) || 0;
+
       if (key === "JURISPOL") {
         let scale =
           e > b
