@@ -79,7 +79,7 @@
     }, {});
   }
 
-  // --- Detección móvil básica ---
+  // --- Detección móvil mejorada (móvil + tablet/iPad) ---
   const isMobile = (function () {
     const ua = (
       navigator.userAgent ||
@@ -87,16 +87,31 @@
       window.opera ||
       ""
     ).toLowerCase();
-    const uaMobile =
-      /android|iphone|ipad|ipod|iemobile|windows phone|blackberry|bb10/.test(
-        ua
-      );
+    const platform = (navigator.platform || "").toLowerCase();
+
+    // iPad clásico + iPadOS moderno (que se identifica como "MacIntel")
+    const isIpad =
+      ua.includes("ipad") ||
+      (platform === "macintel" &&
+        typeof navigator.maxTouchPoints === "number" &&
+        navigator.maxTouchPoints > 1);
+
+    const isPhoneLike =
+      /android|iphone|ipod|iemobile|windows phone|blackberry|bb10/.test(ua);
+
     const coarse =
       window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
     const noHover =
       window.matchMedia && window.matchMedia("(hover: none)").matches;
-    return uaMobile || (coarse && noHover);
+    const hasTouch =
+      typeof navigator.maxTouchPoints === "number" &&
+      navigator.maxTouchPoints > 0;
+
+    // Consideramos "móvil" todo lo táctil sin hover (teléfonos + tablets),
+    // más detecciones específicas de iPad y móviles clásicos.
+    return isIpad || isPhoneLike || (coarse && noHover && hasTouch);
   })();
+
   if (isMobile) document.body.classList.add("is-mobile");
   else document.body.classList.remove("is-mobile");
 

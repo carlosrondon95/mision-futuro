@@ -11,18 +11,18 @@
   --primary: var(--brand-light);
   --ink: var(--gray-dark);
 
-  /* Desktop/base: NO TOCAR (posiciones que has fijado) */
+  /* Desktop/base: NO TOCAR posiciones de START */
   --start-bottom: 6%;
   --start-width: clamp(120px, 12vw, 180px);
 
-  /* Ajustes exclusivos de móvil (puedes cambiarlos por JS o CSS) */
+  /* Ajustes móviles */
   --start-left-portrait: 50%;
   --start-bottom-portrait: 7%;
   --start-left-landscape: 50%;
   --start-bottom-landscape: 6%;
 
-  /* Escala de la portada en modo inicio (controlada por CSS) */
-  --start-bg-size: cover; /* escritorio y móvil horizontal por defecto */
+  /* Escala portada */
+  --start-bg-size: cover;
 }
 
 /* =================== BASE =================== */
@@ -33,7 +33,6 @@ html,
 body {
   height: 100%;
 }
-
 body {
   margin: 0;
   image-rendering: pixelated;
@@ -82,6 +81,7 @@ body {
   font-weight: 600;
 }
 .qr-badge {
+  /* corregido: quitado --var(...) inválido */
   background: var(--brand-dark);
   color: #fff;
   padding: 4px 8px;
@@ -89,8 +89,6 @@ body {
   font-family: "Press Start 2P", monospace;
   font-size: 12px;
 }
-
-/* Pistas */
 .qr-hint--mobile {
   display: none;
 }
@@ -100,15 +98,26 @@ body {
 .is-mobile .qr-hint--mobile {
   display: inline;
 }
+@media (orientation: portrait) {
+  .is-mobile .qr-hud {
+    display: none !important;
+  }
+}
+@media (orientation: landscape) {
+  .is-mobile .qr-hud {
+    display: flex !important;
+  }
+}
 
 /* =================== STAGE =================== */
+/* ► Fondo por defecto = fondo.png (también para selección y juego) */
 .qr-stage {
   position: relative;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: url("../img/fondo.jpg") center / cover no-repeat, #87ceeb;
+  background: url("../img/fondo.png") center / cover no-repeat, #000; /* fallback */
   border: 8px solid var(--gray-dark);
   outline: 6px solid #fff;
   box-shadow: 0 0 0 6px var(--gray-dark), 0 8px 0 var(--black);
@@ -117,7 +126,7 @@ body {
   min-height: 200px;
 }
 .qr-stage--mobile {
-  background: url("../img/fondo.jpg") center / cover no-repeat, #000;
+  background: url("../img/fondo.png") center / cover no-repeat, #000;
 }
 #qr-canvas {
   display: block;
@@ -133,6 +142,14 @@ body {
   background-position: 50% 50%;
   background-repeat: no-repeat;
   background-size: var(--start-bg-size);
+}
+
+/* ► Garantizar fondo en selección y juego SIEMPRE (también con modal abierto) */
+#qr-stage.qr-stage--select,
+#qr-stage.qr-stage--game,
+#qr-stage.qr-stage--select.qr-stage--modal-open,
+#qr-stage.qr-stage--game.qr-stage--modal-open {
+  background: url("../img/fondo.png") center / cover no-repeat, #000 !important;
 }
 
 /* =================== MODALES =================== */
@@ -167,8 +184,7 @@ body {
   align-items: stretch;
   justify-content: center;
 }
-
-/* START posición base */
+/* START base (NO TOCAR posición) */
 #qr-stage .qr-start-cta2 {
   position: absolute;
   left: 123%;
@@ -306,15 +322,6 @@ body {
   user-select: none;
   -webkit-user-drag: none;
 }
-.qr-btn--img:focus,
-.qr-btn--img:focus-visible,
-.qr-btn--img:active {
-  outline: none !important;
-  box-shadow: none !important;
-}
-.qr-btn--img::-moz-focus-inner {
-  border: 0;
-}
 
 /* =================== FORMULARIO =================== */
 .qr-card--form {
@@ -372,6 +379,7 @@ body {
   filter: brightness(0.9);
   outline: 0;
 }
+
 .qr-card--form {
   max-width: 640px;
   width: calc(100% - 24px);
@@ -390,26 +398,6 @@ body {
 @media (max-width: 560px) {
   .qr-form-grid {
     grid-template-columns: 1fr;
-  }
-}
-@media (max-width: 768px) and (orientation: landscape) {
-  .qr-card--form {
-    padding: 12px 14px;
-  }
-  .qr-card--form .qr-title {
-    font-size: 20px;
-    margin-bottom: 8px;
-  }
-  .qr-card--form .qr-row {
-    margin: 6px 0;
-  }
-  .qr-card--form .qr-input {
-    padding: 10px;
-    font-size: 13px;
-  }
-  .qr-card--form .qr-btn {
-    padding: 10px 12px;
-    font-size: 13px;
   }
 }
 
@@ -447,11 +435,6 @@ body {
   border-color: #e71d73 !important;
   color: #000;
   font-family: "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-}
-.qr-card--question .qr-opt:hover,
-.qr-card--question .qr-opt:focus {
-  background: #fff066;
-  border-color: #e71d73 !important;
 }
 
 /* =================== SELECTOR DE PERSONAJE =================== */
@@ -508,6 +491,7 @@ body {
   width: auto;
   height: auto;
 }
+
 @media (max-width: 768px) and (orientation: portrait) {
   .qr-card--select {
     width: 90vw;
@@ -548,6 +532,14 @@ body {
   .qr-select__img {
     max-width: 98%;
     max-height: 98%;
+  }
+}
+
+/* ► Fondo visible en selección (mismo que juego) – redundancia segura */
+@media (max-width: 1024px) and (orientation: landscape) {
+  #qr-stage.qr-stage--select,
+  #qr-stage.qr-stage--select.qr-stage--modal-open {
+    background: url("../img/fondo.png") center / cover no-repeat, #000 !important;
   }
 }
 
@@ -593,7 +585,6 @@ body {
   font-size: 25px;
   margin-top: 2px;
 }
-
 .qr-ceremony-main {
   display: flex;
   align-items: center;
@@ -607,7 +598,6 @@ body {
 .qr-ceremony-main--double .qr-ceremony-logo {
   max-width: 140px;
 }
-
 .qr-ceremony-logo,
 .qr-ceremony-cup {
   max-height: 120px;
@@ -619,7 +609,6 @@ body {
 .qr-ceremony-cup {
   image-rendering: pixelated;
 }
-
 .qr-ceremony-item {
   display: flex;
   flex-direction: column;
@@ -649,7 +638,7 @@ body {
   height: auto;
   animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
 }
-
+/* Ceremonia horizontal móvil */
 @media (max-width: 1024px) and (orientation: landscape) {
   .qr-card--ceremony {
     padding: 10px 8px;
@@ -672,8 +661,10 @@ body {
   .qr-ceremony-academy {
     font-size: clamp(10px, 2vw, 12px);
   }
+  /* RESTART más pequeño */
   .qr-ceremony-restart img {
-    width: min(220px, 50vw);
+    width: clamp(88px, 15vw, 132px) !important;
+    height: auto !important;
   }
 }
 
@@ -847,7 +838,7 @@ body {
   }
 }
 
-/* Ocultar stage en móvil vertical FUERA de FS, salvo con modal abierto */
+/* Ocultar stage en vertical FUERA de FS, salvo con modal */
 @media (orientation: portrait) {
   .is-mobile #qr-app:not(.qr-app--fs) #qr-stage {
     display: none;
@@ -882,7 +873,7 @@ body {
   #qr-canvas {
     width: 100% !important;
     height: auto;
-    aspect-ratio: 3 / 1;
+    aspect-ratio: 3/1;
   }
 }
 
@@ -996,6 +987,8 @@ body {
     transform: translateX(-50%);
   }
 }
+
+/* ====== HORIZONTAL (LANDSCAPE) ====== */
 @media (max-width: 1024px) and (orientation: landscape) {
   :root {
     --start-width: clamp(80px, 25vw, 110px);
@@ -1011,11 +1004,64 @@ body {
     height: 72vh;
     margin: 0 auto;
   }
-  @media (max-width: 1024px) and (orientation: landscape) {
-    body.is-mobile #qr-stage .qr-start-cta2 {
-      left: 63%;
-      bottom: 6%;
-      transform: translateX(-50%);
-    }
+  /* START en landscape móvil (NO TOCAR) */
+  body.is-mobile #qr-stage .qr-start-cta2 {
+    left: 63%;
+    bottom: 6%;
+    transform: translateX(-50%);
   }
+
+  /* Preguntas un poco más grandes (subidón ligero) */
+  .qr-card--question .qr-q {
+    font-size: clamp(14px, 1.8vw, 17px) !important;
+    line-height: 1.2 !important;
+  }
+  .qr-card--question .qr-opt {
+    font-size: clamp(11px, 1.6vw, 13px) !important;
+    padding: 8px 10px !important;
+  }
+
+  /* TUS DATOS: tarjeta más compacta y desbloqueada */
+  .qr-card--form {
+    margin: 0 auto;
+    width: min(440px, 84vw) !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 10px 12px !important;
+  }
+  .qr-card--form .qr-title {
+    font-size: clamp(14px, 1.8vw, 16px) !important;
+    margin-bottom: 8px;
+  }
+  .qr-card--form label {
+    font-size: clamp(12px, 1.5vw, 14px) !important;
+  }
+  .qr-card--form .qr-row {
+    margin: 4px 0;
+  }
+  .qr-card--form .qr-input {
+    padding: 8px 10px;
+    font-size: clamp(12px, 1.5vw, 14px) !important;
+  }
+  .qr-card--form .qr-consent {
+    font-size: clamp(12px, 1.5vw, 14px) !important;
+    gap: 8px;
+  }
+  .qr-card--form .qr-consent input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    transform: translateY(1px);
+  }
+
+  /* SEND = mismo tamaño y brillo que RESTART */
+  .qr-card--form .qr-btn--img__icon {
+    width: clamp(88px, 15vw, 132px) !important;
+    height: auto !important;
+    animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
+  }
+}
+
+/* ► Brillo en SEND (extra por si el botón fuera <button> y no imagen) */
+.qr-card--form .qr-btn {
+  animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
 }

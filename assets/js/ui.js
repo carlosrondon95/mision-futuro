@@ -1,5 +1,5 @@
 (function () {
-  // ===== Util: total de puertas =====
+  /* ===== Util: total de puertas ===== */
   function getTotalDoors() {
     return window.QRData && Array.isArray(window.QRData.QUESTIONS)
       ? window.QRData.QUESTIONS.length
@@ -19,11 +19,10 @@
     setBadge(idx + 1);
   });
 
-  // ===== Resolver base de assets =====
+  /* ===== Resolver base de assets ===== */
   function resolveAssetsBase() {
-    if (window.QR_ASSETS_BASE) {
+    if (window.QR_ASSETS_BASE)
       return String(window.QR_ASSETS_BASE).replace(/\/?$/, "/");
-    }
     const scripts = document.scripts || document.getElementsByTagName("script");
     for (let i = 0; i < scripts.length; i++) {
       const src = scripts[i].src || "";
@@ -34,7 +33,7 @@
   }
   const ASSETS = resolveAssetsBase();
 
-  // ===== Infra modal =====
+  /* ===== Infra modal ===== */
   const stageEl = document.getElementById("qr-stage");
   let root = document.querySelector("#qr-stage #qr-modal-root");
   if (!root) {
@@ -45,8 +44,7 @@
   const appEl = document.getElementById("qr-app");
 
   function markStageModalOpen(on) {
-    if (!stageEl) return;
-    stageEl.classList.toggle("qr-stage--modal-open", !!on);
+    if (stageEl) stageEl.classList.toggle("qr-stage--modal-open", !!on);
   }
   function emit(name, detail) {
     window.dispatchEvent(new CustomEvent(name, { detail }));
@@ -113,15 +111,12 @@
 
   // ===== Portada: elección de imagen =====
   function pickStartImageSrc() {
-    if (isMobile() && isPortrait()) {
-      return `${ASSETS}img/portadaresponsive.jpg`;
-    }
+    if (isMobile() && isPortrait()) return `${ASSETS}img/portadaresponsive.jpg`;
     return `${ASSETS}img/inicio.jpg`;
   }
 
-  // ===== Aplicar/actualizar fondo de portada vía variables CSS =====
+  // ===== Aplicar/actualizar fondo de portada vía CSS vars =====
   let _prevStageStyle = null;
-
   function applyStartBg() {
     if (!stageEl) return;
     _prevStageStyle = stageEl.getAttribute("style") || "";
@@ -131,7 +126,6 @@
       `url("${pickStartImageSrc()}")`
     );
   }
-
   function updateStartBgImageOnly() {
     if (!stageEl || !stageEl.classList.contains("qr-stage--start")) return;
     stageEl.style.setProperty(
@@ -139,7 +133,6 @@
       `url("${pickStartImageSrc()}")`
     );
   }
-
   function clearStartBg() {
     if (!stageEl) return;
     stageEl.classList.remove("qr-stage--start");
@@ -151,11 +144,10 @@
     }
   }
 
-  // ===== Pantalla de inicio =====
+  /* ===== Pantalla de inicio ===== */
   function startModal(onPlay) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
-    // Fondo de portada
     applyStartBg();
 
     const modal = document.createElement("div");
@@ -186,6 +178,12 @@
       window.removeEventListener("orientationchange", onOrient);
       close();
       clearStartBg();
+      /* ► Al salir de portada, aseguramos fondo de juego = fondo.png (igual que selección) */
+      try {
+        if (stageEl)
+          stageEl.style.background =
+            'url("' + ASSETS + 'img/fondo.png") center / cover no-repeat, #000';
+      } catch (_) {}
     };
 
     async function requestFSNow() {
@@ -216,7 +214,7 @@
     window.addEventListener("keydown", keyHandler);
   }
 
-  // ===== Selección de personaje =====
+  /* ===== Selección de personaje ===== */
   function selectHeroModal(maleUrl, femaleUrl, onSelect) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -244,6 +242,20 @@
     markStageModalOpen(true);
     emit("qr:modal:open");
 
+    /* ► Fondo selección ON (idéntico al de juego) */
+    try {
+      if (stageEl) stageEl.classList.add("qr-stage--select");
+    } catch (_) {}
+    window.addEventListener(
+      "qr:modal:close",
+      () => {
+        try {
+          if (stageEl) stageEl.classList.remove("qr-stage--select");
+        } catch (_) {}
+      },
+      { once: true }
+    );
+
     if (window.QRAudio) window.QRAudio.playDoor();
 
     const refit = () => requestAnimationFrame(() => fitCardToStage(card, 0.8));
@@ -264,6 +276,12 @@
     const pick = (g) => {
       if (window.QRAudio) window.QRAudio.playAnswer();
       close();
+      /* ► Al cerrar selección y arrancar juego, mantenemos mismo fondo */
+      try {
+        if (stageEl)
+          stageEl.style.background =
+            'url("' + ASSETS + 'img/fondo.png") center / cover no-repeat, #000';
+      } catch (_) {}
       onSelect && onSelect(g);
     };
     card
@@ -291,7 +309,7 @@
     });
   }
 
-  // ===== Pregunta =====
+  /* ===== Pregunta ===== */
   function questionModal(qObj, onAnswer) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -340,7 +358,7 @@
     );
   }
 
-  // ===== Formulario =====
+  /* ===== Formulario ===== */
   function formModal(onSubmit) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -433,7 +451,6 @@
         inputEl && inputEl.classList.remove("is-invalid");
       }
     }
-
     function validateName() {
       const v = (nameI.value || "").trim();
       if (!v) return setErr(nameI, errName, "El nombre es obligatorio."), false;
@@ -442,14 +459,12 @@
       setErr(nameI, errName, "");
       return true;
     }
-
     function sanitizePhone() {
       let v = phoneI.value.replace(/[^\d+]/g, "");
       if (v.includes("+"))
         v = "+" + v.replace(/[+]/g, "").replace(/[^\d]/g, "");
       phoneI.value = v;
     }
-
     function validatePhone() {
       sanitizePhone();
       const v = phoneI.value.trim();
@@ -476,7 +491,6 @@
       setErr(phoneI, errPhone, "");
       return true;
     }
-
     function validateEmail() {
       const v = (mailI.value || "").trim();
       if (!v) return setErr(mailI, errEmail, "El email es obligatorio."), false;
@@ -485,7 +499,6 @@
       setErr(mailI, errEmail, "");
       return true;
     }
-
     function validateConsent() {
       if (!consI.checked)
         return (
@@ -495,7 +508,6 @@
       setErr(consI, errCons, "");
       return true;
     }
-
     function validateAll() {
       const a = validateName(),
         b = validateEmail(),
@@ -532,9 +544,7 @@
     });
   }
 
-  // ================== CEREMONIA DE ASIGNACIÓN NUEVA ==================
-
-  // Normalización básica
+  /* ================== CEREMONIA ================== */
   function normalize(s) {
     return String(s || "")
       .toUpperCase()
@@ -542,8 +552,6 @@
       .replace(/[\u0300-\u036F]/g, "")
       .trim();
   }
-
-  // Mapeo: identificador -> logo + texto de rol
   const ACADEMY_META = {
     AGEADMIN: {
       id: "AGEADMIN",
@@ -594,35 +602,23 @@
       role: "POLICÍA NACIONAL",
     },
   };
-
-  // Detecta meta a partir del texto “decorado” que manda game.js (p.ej. "JURISPOL – Escala Ejecutiva", "AGE360 – Auxiliar")
   function metaFromDecorated(label) {
     const t = normalize(label);
-
-    // AGE360 → distinguir rama
     if (t.includes("AGE360")) {
       if (t.includes("AUXILIAR")) return ACADEMY_META.AGEAUX;
-      return ACADEMY_META.AGEADMIN; // por defecto Administrativo si no indica Auxiliar
+      return ACADEMY_META.AGEADMIN;
     }
-
-    // JURISPOL → distinguir escala
     if (t.includes("JURISPOL")) {
       if (t.includes("EJECUTIVA")) return ACADEMY_META.JURISPOLEE;
-      return ACADEMY_META.JURISPOLEB; // por defecto Básica si no indica Ejecutiva
+      return ACADEMY_META.JURISPOLEB;
     }
-
-    // Resto directos
     if (t.includes("PREFORTIA")) return ACADEMY_META.PREFORTIA;
     if (t.includes("FORVIDE")) return ACADEMY_META.FORVIDE;
     if (t.includes("METODOS") || t.includes("MÉTODOS"))
       return ACADEMY_META.METODOS;
     if (t.includes("DOZENTY")) return ACADEMY_META.DOZENTY;
-
-    // Fallback genérico (sin logo/rol)
     return { id: t, label: label || "Academia", logo: null, role: "" };
   }
-
-  // Extrae ganadores de distintos formatos
   function extractWinners(result) {
     if (!result) return [];
     if (Array.isArray(result)) return result.slice(0, 2);
@@ -642,8 +638,6 @@
       return [result.top1, result.top2].filter(Boolean);
     return [];
   }
-
-  // Esperar a que carguen imágenes del card y refitear
   function refitOnImages(card) {
     if (!card) return;
     const imgs = Array.from(card.querySelectorAll("img"));
@@ -658,19 +652,15 @@
     };
     imgs.forEach((img) => {
       if (img.complete && img.naturalWidth) {
-        // ya cargada
         pending--;
       } else {
         img.addEventListener("load", done, { once: true });
         img.addEventListener("error", done, { once: true });
       }
     });
-    // refit inicial y de seguridad
     fitCardToStage(card, 0.85);
     setTimeout(() => fitCardToStage(card, 0.85), 120);
   }
-
-  // Ceremonia
   function endingModal(result, onRestart) {
     if (!root) return;
 
@@ -683,10 +673,8 @@
     const LOGO_BASE = `${ASSETS}img/logos/`;
     const RESTART_SRC = `${ASSETS}img/buttons/restart.png`;
 
-    // Bloque central: logos + copas
     let centerHtml = "";
     if (mainMeta && mainMeta.logo && !hasSecond) {
-      // Una sola academia: logo en centro + dos copas
       centerHtml = `
         <div class="qr-ceremony-main qr-ceremony-main--single">
           <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
@@ -694,10 +682,8 @@
         mainMeta.label
       }" class="qr-ceremony-logo" />
           <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
-        </div>
-      `;
+        </div>`;
     } else if (mainMeta && mainMeta.logo && hasSecond) {
-      // Dos academias: copa medio; main izq, second dcha
       centerHtml = `
         <div class="qr-ceremony-main qr-ceremony-main--double">
           <img src="${LOGO_BASE + mainMeta.logo}" alt="${
@@ -707,18 +693,14 @@
           <img src="${LOGO_BASE + secondMeta.logo}" alt="${
         secondMeta.label
       }" class="qr-ceremony-logo" />
-        </div>
-      `;
+        </div>`;
     } else {
-      // Fallback
       centerHtml = `
         <div class="qr-ceremony-main">
           <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
-        </div>
-      `;
+        </div>`;
     }
 
-    // Roles (estilo del título, apilados)
     const rolesHtml = `
       <div class="qr-ceremony-roles">
         ${
@@ -731,15 +713,13 @@
             ? `<div class="qr-ceremony-role">${secondMeta.role}</div>`
             : ""
         }
-      </div>
-    `;
+      </div>`;
 
-    // Limpiar y montar
     markStageModalOpen(true);
     root.innerHTML = "";
 
     const modal = document.createElement("div");
-    modal.className = "qr-modal"; // velo estándar
+    modal.className = "qr-modal";
 
     const card = document.createElement("div");
     card.className = "qr-card qr-card--ceremony";
@@ -751,14 +731,12 @@
         <button type="button" class="qr-ceremony-restart" aria-label="Reiniciar">
           <img src="${RESTART_SRC}" alt="Volver a jugar" />
         </button>
-      </div>
-    `;
+      </div>`;
 
     modal.appendChild(card);
     root.appendChild(modal);
     emit("qr:modal:open");
 
-    // Refit responsive (y al cargar imágenes)
     const refit = () => requestAnimationFrame(() => fitCardToStage(card, 0.85));
     refitOnImages(card);
     window.addEventListener("resize", refit);
@@ -774,14 +752,12 @@
       { once: true }
     );
 
-    // Restart funcional:
     const restartBtn = card.querySelector(".qr-ceremony-restart");
     if (restartBtn) {
       restartBtn.addEventListener("click", () => {
-        // Cerrar modal, liberar flag y ejecutar callback si existe
         close();
         markStageModalOpen(false);
-        emit("qr-restart"); // por compatibilidad
+        emit("qr-restart");
         if (typeof onRestart === "function") {
           try {
             onRestart();
@@ -793,10 +769,8 @@
         }
       });
     }
-
     return modal;
   }
-  // ================== FIN CEREMONIA ==================
 
   window.QRUI = {
     startModal,
@@ -806,30 +780,4 @@
     endingModal,
     close,
   };
-})();
-
-/* =================== CONTROLES JS PARA POSICIÓN DEL START EN MÓVIL =================== */
-(function () {
-  const R = document.documentElement.style;
-  function setVar(name, val) {
-    if (val == null) return;
-    const v = typeof val === "number" ? val + "%" : String(val);
-    R.setProperty(name, v);
-  }
-
-  const controls = {
-    /** Ajuste rápido en móvil vertical (portrait) */
-    setStartPosPortrait({ left, bottom } = {}) {
-      setVar("--start-left-portrait", left);
-      setVar("--start-bottom-portrait", bottom);
-    },
-    /** Ajuste rápido en móvil horizontal (landscape) */
-    setStartPosLandscape({ left, bottom } = {}) {
-      setVar("--start-left-landscape", left);
-      setVar("--start-bottom-landscape", bottom);
-    },
-  };
-
-  window.QRUI = window.QRUI || {};
-  window.QRUI.controls = Object.assign(window.QRUI.controls || {}, controls);
 })();
