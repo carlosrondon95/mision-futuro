@@ -1,10 +1,14 @@
+// assets/js/ui.js
 (function () {
-  /* ===== Util: total de puertas ===== */
+  /* =========================
+   *  PROGRESO / CONTADOR DE PUERTAS
+   * ========================= */
   function getTotalDoors() {
     return window.QRData && Array.isArray(window.QRData.QUESTIONS)
       ? window.QRData.QUESTIONS.length
       : 0;
   }
+
   function setBadge(currentOneBased) {
     var badge = document.querySelector(".qr-badge");
     var total = getTotalDoors();
@@ -13,16 +17,21 @@
       badge.textContent = curr + " / " + total;
     }
   }
+
   setBadge(1);
+
   window.addEventListener("qr:station", function (ev) {
     var idx = ev?.detail?.index ?? 0;
     setBadge(idx + 1);
   });
 
-  /* ===== Resolver base de assets ===== */
+  /* =========================
+   *  BASE DE ASSETS
+   * ========================= */
   function resolveAssetsBase() {
     if (window.QR_ASSETS_BASE)
       return String(window.QR_ASSETS_BASE).replace(/\/?$/, "/");
+
     const scripts = document.scripts || document.getElementsByTagName("script");
     for (let i = 0; i < scripts.length; i++) {
       const src = scripts[i].src || "";
@@ -31,9 +40,12 @@
     }
     return "assets/";
   }
+
   const ASSETS = resolveAssetsBase();
 
-  /* ===== Infra modal ===== */
+  /* =========================
+   *  INFRA MODAL
+   * ========================= */
   const stageEl = document.getElementById("qr-stage");
   let root = document.querySelector("#qr-stage #qr-modal-root");
   if (!root) {
@@ -46,9 +58,11 @@
   function markStageModalOpen(on) {
     if (stageEl) stageEl.classList.toggle("qr-stage--modal-open", !!on);
   }
+
   function emit(name, detail) {
     window.dispatchEvent(new CustomEvent(name, { detail }));
   }
+
   function close() {
     const m = document.querySelector("#qr-stage .qr-modal");
     if (m) m.remove();
@@ -60,6 +74,7 @@
   function isMobile() {
     return document.body.classList.contains("is-mobile");
   }
+
   function isTypingTarget(el) {
     if (!el) return false;
     const t = (el.tagName || "").toLowerCase();
@@ -71,13 +86,14 @@
     );
   }
 
-  // Bloquear scroll con Space fuera de inputs
+  // Bloqueo scroll con SPACE fuera del juego
   (function installSpaceScrollGuard() {
     const handler = (e) => {
       const code = e.code || e.key;
       const isSpace = code === "Space" || code === "Spacebar" || e.key === " ";
       if (!isSpace) return;
       if (isTypingTarget(e.target)) return;
+
       const insideApp = !!(appEl && appEl.contains(e.target));
       const modalOpen = !!document.querySelector("#qr-stage .qr-modal");
       if (insideApp || modalOpen) e.preventDefault();
@@ -88,15 +104,19 @@
     });
   })();
 
-  // Ajuste de escala para tarjetas
+  /* =========================
+   *  AJUSTE ESCALA TARJETAS
+   * ========================= */
   function fitCardToStage(card, minScale = 0.85) {
     if (!card || !stageEl) return;
     const rectStage = stageEl.getBoundingClientRect();
     const availW = Math.max(1, rectStage.width - 16);
     const availH = Math.max(1, rectStage.height - 16);
+
     card.style.transform = "none";
     card.style.transformOrigin = "center center";
     card.style.willChange = "transform";
+
     const rect = card.getBoundingClientRect();
     const scaleW = availW / Math.max(1, rect.width);
     const scaleH = availH / Math.max(1, rect.height);
@@ -104,19 +124,20 @@
     if (scale < 1) card.style.transform = `scale(${scale})`;
   }
 
-  // ===== Helpers de orientación =====
   function isPortrait() {
     return window.matchMedia("(orientation: portrait)").matches;
   }
 
-  // ===== Portada: elección de imagen =====
+  /* =========================
+   *  PORTADA / START
+   * ========================= */
   function pickStartImageSrc() {
     if (isMobile() && isPortrait()) return `${ASSETS}img/portadaresponsive.jpg`;
     return `${ASSETS}img/inicio.jpg`;
   }
 
-  // ===== Aplicar/actualizar fondo de portada vía CSS vars =====
   let _prevStageStyle = null;
+
   function applyStartBg() {
     if (!stageEl) return;
     _prevStageStyle = stageEl.getAttribute("style") || "";
@@ -126,6 +147,7 @@
       `url("${pickStartImageSrc()}")`
     );
   }
+
   function updateStartBgImageOnly() {
     if (!stageEl || !stageEl.classList.contains("qr-stage--start")) return;
     stageEl.style.setProperty(
@@ -133,6 +155,7 @@
       `url("${pickStartImageSrc()}")`
     );
   }
+
   function clearStartBg() {
     if (!stageEl) return;
     stageEl.classList.remove("qr-stage--start");
@@ -144,7 +167,6 @@
     }
   }
 
-  /* ===== Pantalla de inicio ===== */
   function startModal(onPlay) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -178,11 +200,11 @@
       window.removeEventListener("orientationchange", onOrient);
       close();
       clearStartBg();
-      /* ► Al salir de portada, aseguramos fondo de juego = fondo.png (igual que selección) */
+      // Al salir de portada, aseguramos fondo de juego = fondo.png
       try {
         if (stageEl)
           stageEl.style.background =
-            'url("' + ASSETS + 'img/fondo.png") center / cover no-repeat, #000';
+            'url("' + ASSETS + 'img/fondo.jpg") center / cover no-repeat, #000';
       } catch (_) {}
     };
 
@@ -214,7 +236,9 @@
     window.addEventListener("keydown", keyHandler);
   }
 
-  /* ===== Selección de personaje ===== */
+  /* =========================
+   *  SELECCIÓN DE PERSONAJE
+   * ========================= */
   function selectHeroModal(maleUrl, femaleUrl, onSelect) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -227,10 +251,14 @@
       <h3 class="qr-title">Elige tu personaje</h3>
       <div class="qr-select" role="listbox" aria-label="Elige personaje">
         <button class="qr-select__item" id="selMale" aria-label="Hombre">
-          <div class="qr-select__imgwrap"><img class="qr-select__img" src="${maleUrl}" alt="Hombre" /></div>
+          <div class="qr-select__imgwrap">
+            <img class="qr-select__img" src="${maleUrl}" alt="Hombre" />
+          </div>
         </button>
         <button class="qr-select__item" id="selFemale" aria-label="Mujer">
-          <div class="qr-select__imgwrap"><img class="qr-select__img" src="${femaleUrl}" alt="Mujer" /></div>
+          <div class="qr-select__imgwrap">
+            <img class="qr-select__img" src="${femaleUrl}" alt="Mujer" />
+          </div>
         </button>
       </div>
     `;
@@ -242,15 +270,27 @@
     markStageModalOpen(true);
     emit("qr:modal:open");
 
-    /* ► Fondo selección ON (idéntico al de juego) */
+    // ► Fondo selección SIEMPRE fondo.png (escritorio y móvil)
     try {
-      if (stageEl) stageEl.classList.add("qr-stage--select");
+      if (stageEl) {
+        stageEl.classList.add("qr-stage--select");
+        stageEl.style.background =
+          'url("' + ASSETS + 'img/fondo.jpg") center / cover no-repeat, #000';
+      }
     } catch (_) {}
+
     window.addEventListener(
       "qr:modal:close",
       () => {
         try {
-          if (stageEl) stageEl.classList.remove("qr-stage--select");
+          if (stageEl) {
+            stageEl.classList.remove("qr-stage--select");
+            // al cerrar selección dejamos el mismo fondo del juego
+            stageEl.style.background =
+              'url("' +
+              ASSETS +
+              'img/fondo.jpg") center / cover no-repeat, #000';
+          }
         } catch (_) {}
       },
       { once: true }
@@ -276,14 +316,14 @@
     const pick = (g) => {
       if (window.QRAudio) window.QRAudio.playAnswer();
       close();
-      /* ► Al cerrar selección y arrancar juego, mantenemos mismo fondo */
       try {
         if (stageEl)
           stageEl.style.background =
-            'url("' + ASSETS + 'img/fondo.png") center / cover no-repeat, #000';
+            'url("' + ASSETS + 'img/fondo.jpg") center / cover no-repeat, #000';
       } catch (_) {}
       onSelect && onSelect(g);
     };
+
     card
       .querySelector("#selMale")
       .addEventListener("click", () => pick("hombre"));
@@ -309,7 +349,9 @@
     });
   }
 
-  /* ===== Pregunta ===== */
+  /* =========================
+   *  MODAL DE PREGUNTA
+   * ========================= */
   function questionModal(qObj, onAnswer) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -322,10 +364,12 @@
       <div class="qr-q">${qObj.q}</div>
       <div class="qr-opts"></div>
     `;
+
     const opts = card.querySelector(".qr-opts");
     qObj.opts.forEach((op) => {
       const b = document.createElement("button");
       b.className = "qr-opt";
+      b.type = "button";
       b.textContent = op;
       b.addEventListener("click", () => {
         if (window.QRAudio) window.QRAudio.playAnswer();
@@ -358,7 +402,9 @@
     );
   }
 
-  /* ===== Formulario ===== */
+  /* =========================
+   *  MODAL FORMULARIO
+   * ========================= */
   function formModal(onSubmit) {
     if (document.querySelector("#qr-stage .qr-modal")) return;
 
@@ -390,11 +436,14 @@
         <div class="qr-row qr-consent">
           <label>
             <input id="fConsent" type="checkbox">
-            Acepto la <a id="policyLink" class="qr-link" href="https://versuselearning.com/politica-de-privacidad/" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
+            Acepto la
+            <a id="policyLink" class="qr-link" href="https://versuselearning.com/politica-de-privacidad/" target="_blank" rel="noopener noreferrer">
+              Política de Privacidad
+            </a>
           </label>
           <div class="qr-error" id="errConsent"></div>
         </div>
-        <div class="qr-start-actions">
+        <div class="qr-ceremony-actions">
           <button class="qr-btn--img" id="btnSend" type="submit" aria-label="Enviar">
             <img src="${ASSETS}img/buttons/send.png" alt="Enviar" class="qr-btn--img__icon" />
           </button>
@@ -428,7 +477,6 @@
     if (policyLink)
       policyLink.addEventListener("click", (e) => e.stopPropagation());
 
-    // Validación
     const form = card.querySelector("#qrLeadForm");
     const nameI = card.querySelector("#fName");
     const mailI = card.querySelector("#fEmail");
@@ -451,6 +499,7 @@
         inputEl && inputEl.classList.remove("is-invalid");
       }
     }
+
     function validateName() {
       const v = (nameI.value || "").trim();
       if (!v) return setErr(nameI, errName, "El nombre es obligatorio."), false;
@@ -459,17 +508,20 @@
       setErr(nameI, errName, "");
       return true;
     }
+
     function sanitizePhone() {
       let v = phoneI.value.replace(/[^\d+]/g, "");
       if (v.includes("+"))
         v = "+" + v.replace(/[+]/g, "").replace(/[^\d]/g, "");
       phoneI.value = v;
     }
+
     function validatePhone() {
       sanitizePhone();
       const v = phoneI.value.trim();
       if (!v)
         return setErr(phoneI, errPhone, "El teléfono es obligatorio."), false;
+
       const isIntl = v.startsWith("+");
       if (!isIntl) {
         if (!/^\d{9}$/.test(v))
@@ -491,6 +543,7 @@
       setErr(phoneI, errPhone, "");
       return true;
     }
+
     function validateEmail() {
       const v = (mailI.value || "").trim();
       if (!v) return setErr(mailI, errEmail, "El email es obligatorio."), false;
@@ -499,6 +552,7 @@
       setErr(mailI, errEmail, "");
       return true;
     }
+
     function validateConsent() {
       if (!consI.checked)
         return (
@@ -508,6 +562,7 @@
       setErr(consI, errCons, "");
       return true;
     }
+
     function validateAll() {
       const a = validateName(),
         b = validateEmail(),
@@ -533,6 +588,7 @@
         if (!validateConsent()) return consI.focus();
         return;
       }
+
       close();
       onSubmit &&
         onSubmit({
@@ -544,14 +600,17 @@
     });
   }
 
-  /* ================== CEREMONIA ================== */
-  function normalize(s) {
-    return String(s || "")
+  /* =========================
+   *  CEREMONIA FINAL
+   * ========================= */
+  function normalize(str) {
+    return String(str || "")
       .toUpperCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036F]/g, "")
       .trim();
   }
+
   const ACADEMY_META = {
     AGEADMIN: {
       id: "AGEADMIN",
@@ -602,143 +661,186 @@
       role: "POLICÍA NACIONAL",
     },
   };
-  function metaFromDecorated(label) {
-    const t = normalize(label);
-    if (t.includes("AGE360")) {
-      if (t.includes("AUXILIAR")) return ACADEMY_META.AGEAUX;
-      return ACADEMY_META.AGEADMIN;
-    }
-    if (t.includes("JURISPOL")) {
-      if (t.includes("EJECUTIVA")) return ACADEMY_META.JURISPOLEE;
-      return ACADEMY_META.JURISPOLEB;
-    }
-    if (t.includes("PREFORTIA")) return ACADEMY_META.PREFORTIA;
-    if (t.includes("FORVIDE")) return ACADEMY_META.FORVIDE;
-    if (t.includes("METODOS") || t.includes("MÉTODOS"))
-      return ACADEMY_META.METODOS;
-    if (t.includes("DOZENTY")) return ACADEMY_META.DOZENTY;
-    return { id: t, label: label || "Academia", logo: null, role: "" };
+
+  function mapWinnerNameToMetaKey(name) {
+    const n = normalize(name);
+    if (!n) return null;
+
+    if (n.startsWith("AGE360") && n.includes("AUXILIAR")) return "AGEAUX";
+    if (n.startsWith("AGE360")) return "AGEADMIN";
+
+    if (n.startsWith("JURISPOL") && n.includes("ESCALA BASICA"))
+      return "JURISPOLEB";
+    if (n.startsWith("JURISPOL") && n.includes("ESCALA EJECUTIVA"))
+      return "JURISPOLEE";
+
+    if (n === "PREFORTIA") return "PREFORTIA";
+    if (n === "FORVIDE") return "FORVIDE";
+    if (n === "METODOS" || n === "MÉTODOS") return "METODOS";
+    if (n === "DOZENTY") return "DOZENTY";
+
+    return null;
   }
-  function extractWinners(result) {
-    if (!result) return [];
-    if (Array.isArray(result)) return result.slice(0, 2);
-    if (result.main || result.secondary)
-      return [result.main, result.secondary].filter(Boolean);
-    if (result.primary || result.secondary)
-      return [result.primary, result.secondary].filter(Boolean);
-    if (result.first || result.second)
-      return [result.first, result.second].filter(Boolean);
-    if (result.top2 && Array.isArray(result.top2))
-      return result.top2.slice(0, 2);
-    if (result.best && Array.isArray(result.best))
-      return result.best.slice(0, 2);
-    if (result.winner) return [result.winner];
-    if (result.academy) return [result.academy];
-    if (result.top1 || result.top2)
-      return [result.top1, result.top2].filter(Boolean);
+
+  function getBulletsFor(name) {
+    try {
+      if (window.QRData && typeof window.QRData.bullets === "function") {
+        return window.QRData.bullets(name) || [];
+      }
+    } catch (_) {}
     return [];
   }
-  function refitOnImages(card) {
-    if (!card) return;
-    const imgs = Array.from(card.querySelectorAll("img"));
-    if (!imgs.length) {
-      fitCardToStage(card, 0.85);
-      return;
-    }
-    let pending = imgs.length;
-    const done = () => {
-      pending--;
-      if (pending <= 0) fitCardToStage(card, 0.85);
-    };
-    imgs.forEach((img) => {
-      if (img.complete && img.naturalWidth) {
-        pending--;
-      } else {
-        img.addEventListener("load", done, { once: true });
-        img.addEventListener("error", done, { once: true });
-      }
-    });
-    fitCardToStage(card, 0.85);
-    setTimeout(() => fitCardToStage(card, 0.85), 120);
-  }
-  function endingModal(result, onRestart) {
-    if (!root) return;
 
-    const winnersRaw = extractWinners(result);
-    const mainMeta = metaFromDecorated(winnersRaw[0]);
-    const secondMeta = winnersRaw[1] ? metaFromDecorated(winnersRaw[1]) : null;
-    const hasSecond = !!(secondMeta && secondMeta.logo);
+  /**
+   * endingModal(result, [leadData], [onRestart])
+   * result: { top1, top2 }
+   */
+  function endingModal(result, maybeLeadOrCb, maybeCb) {
+    if (document.querySelector("#qr-stage .qr-modal")) return;
 
-    const CUP_SRC = `${ASSETS}img/copa.png`;
-    const LOGO_BASE = `${ASSETS}img/logos/`;
-    const RESTART_SRC = `${ASSETS}img/buttons/restart.png`;
+    const leadData =
+      typeof maybeLeadOrCb === "function" ? null : maybeLeadOrCb || null;
+    const onRestart =
+      typeof maybeLeadOrCb === "function"
+        ? maybeLeadOrCb
+        : typeof maybeCb === "function"
+        ? maybeCb
+        : null;
 
-    let centerHtml = "";
-    if (mainMeta && mainMeta.logo && !hasSecond) {
-      centerHtml = `
-        <div class="qr-ceremony-main qr-ceremony-main--single">
-          <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
-          <img src="${LOGO_BASE + mainMeta.logo}" alt="${
-        mainMeta.label
-      }" class="qr-ceremony-logo" />
-          <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
-        </div>`;
-    } else if (mainMeta && mainMeta.logo && hasSecond) {
-      centerHtml = `
-        <div class="qr-ceremony-main qr-ceremony-main--double">
-          <img src="${LOGO_BASE + mainMeta.logo}" alt="${
-        mainMeta.label
-      }" class="qr-ceremony-logo" />
-          <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
-          <img src="${LOGO_BASE + secondMeta.logo}" alt="${
-        secondMeta.label
-      }" class="qr-ceremony-logo" />
-        </div>`;
-    } else {
-      centerHtml = `
-        <div class="qr-ceremony-main">
-          <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
-        </div>`;
-    }
+    const top1 = result && result.top1 ? result.top1 : null;
+    const top2 = result && result.top2 ? result.top2 : null;
 
-    const rolesHtml = `
-      <div class="qr-ceremony-roles">
-        ${
-          mainMeta && mainMeta.role
-            ? `<div class="qr-ceremony-role">${mainMeta.role}</div>`
-            : ""
-        }
-        ${
-          hasSecond && secondMeta.role
-            ? `<div class="qr-ceremony-role">${secondMeta.role}</div>`
-            : ""
-        }
-      </div>`;
+    const key1 = mapWinnerNameToMetaKey(top1);
+    const key2 = top2 ? mapWinnerNameToMetaKey(top2) : null;
 
-    markStageModalOpen(true);
-    root.innerHTML = "";
+    const ac1 = key1 ? ACADEMY_META[key1] : null;
+    const ac2 = key2 ? ACADEMY_META[key2] : null;
+
+    const bullets1 = top1 ? getBulletsFor(top1) : [];
+    const bullets2 = top2 ? getBulletsFor(top2) : [];
 
     const modal = document.createElement("div");
     modal.className = "qr-modal";
 
     const card = document.createElement("div");
     card.className = "qr-card qr-card--ceremony";
+
+    const single = !!ac1 && !ac2;
+    const mainClass = single
+      ? "qr-ceremony-main qr-ceremony-main--single"
+      : "qr-ceremony-main qr-ceremony-main--double";
+
+    let rolesHtml = "";
+    if (ac1) {
+      rolesHtml += `<div class="qr-ceremony-role">${ac1.role}</div>`;
+    }
+    if (ac2 && ac2.role !== ac1.role) {
+      rolesHtml += `<div class="qr-ceremony-role">${ac2.role}</div>`;
+    }
+
+    function academyBlock(ac, title, bullets, extraClass) {
+      if (!ac) return "";
+      const safeTitle = title || ac.label;
+      const bulletsHtml = bullets.map((b) => `<li>${b}</li>`).join("") || "";
+      return `
+        <div class="qr-ceremony-item ${extraClass || ""}">
+          <img src="${ASSETS}img/logos/${
+        ac.logo
+      }" alt="${safeTitle}" class="qr-ceremony-logo" />
+          <div class="qr-ceremony-academy">${safeTitle}</div>
+          ${
+            bulletsHtml
+              ? `<ul class="qr-ceremony-bullets">${bulletsHtml}</ul>`
+              : ""
+          }
+        </div>
+      `;
+    }
+
+    let mainHtml = "";
+    if (single && ac1) {
+      mainHtml = `
+        <div class="${mainClass}">
+          <div class="qr-ceremony-item">
+            <img src="${ASSETS}img/copa.png" alt="" class="qr-ceremony-cup" />
+          </div>
+          ${academyBlock(ac1, top1 || ac1.label, bullets1, "")}
+          <div class="qr-ceremony-item">
+            <img src="${ASSETS}img/copa.png" alt="" class="qr-ceremony-cup" />
+          </div>
+        </div>
+      `;
+    } else if (ac1 && ac2) {
+      mainHtml = `
+        <div class="${mainClass}">
+          ${academyBlock(ac1, top1 || ac1.label, bullets1, "")}
+          <div class="qr-ceremony-item">
+            <img src="${ASSETS}img/copa.png" alt="" class="qr-ceremony-cup" />
+          </div>
+          ${academyBlock(ac2, top2 || ac2.label, bullets2, "")}
+        </div>
+      `;
+    } else if (ac1) {
+      // fallback a una sola si algo raro pasa
+      mainHtml = `
+        <div class="${mainClass}">
+          ${academyBlock(ac1, top1 || ac1.label, bullets1, "")}
+        </div>
+      `;
+    } else {
+      mainHtml = `
+        <div class="${mainClass}">
+          <p>No se ha podido determinar una academia.</p>
+        </div>
+      `;
+    }
+
+    let leadHtml = "";
+    if (leadData && (leadData.name || leadData.email || leadData.phone)) {
+      leadHtml = `
+        <div class="qr-ceremony-roles">
+          ${
+            leadData.name
+              ? `<div class="qr-ceremony-academy">Alumno: ${leadData.name}</div>`
+              : ""
+          }
+          ${
+            leadData.email
+              ? `<div class="qr-ceremony-academy">Email: ${leadData.email}</div>`
+              : ""
+          }
+          ${
+            leadData.phone
+              ? `<div class="qr-ceremony-academy">Teléfono: ${leadData.phone}</div>`
+              : ""
+          }
+        </div>
+      `;
+    }
+
     card.innerHTML = `
-      <h2 class="qr-ceremony-title">CEREMONIA DE ASIGNACIÓN</h2>
-      ${centerHtml}
-      ${rolesHtml}
+      <h3 class="qr-ceremony-title">CEREMONIA DE ASIGNACIÓN</h3>
+      <div class="qr-ceremony-roles">
+        ${rolesHtml}
+      </div>
+      ${leadHtml}
+      ${mainHtml}
       <div class="qr-ceremony-actions">
-        <button type="button" class="qr-ceremony-restart" aria-label="Reiniciar">
-          <img src="${RESTART_SRC}" alt="Volver a jugar" />
+        <button class="qr-ceremony-restart" type="button" aria-label="Volver a jugar">
+          <img src="${ASSETS}img/buttons/restart.png" alt="Volver a jugar" />
         </button>
-      </div>`;
+      </div>
+    `;
 
     modal.appendChild(card);
-    root.appendChild(modal);
+    (document.querySelector("#qr-stage #qr-modal-root") || root).appendChild(
+      modal
+    );
+    markStageModalOpen(true);
     emit("qr:modal:open");
 
-    const refit = () => requestAnimationFrame(() => fitCardToStage(card, 0.85));
-    refitOnImages(card);
+    const refit = () => requestAnimationFrame(() => fitCardToStage(card, 0.9));
+    refit();
     window.addEventListener("resize", refit);
     window.addEventListener("orientationchange", refit);
     window.addEventListener("qr:viewport:change", refit);
@@ -755,29 +857,21 @@
     const restartBtn = card.querySelector(".qr-ceremony-restart");
     if (restartBtn) {
       restartBtn.addEventListener("click", () => {
+        if (window.QRAudio) window.QRAudio.playDoor();
         close();
-        markStageModalOpen(false);
-        emit("qr-restart");
-        if (typeof onRestart === "function") {
-          try {
-            onRestart();
-          } catch (e) {
-            location.reload();
-          }
-        } else {
-          location.reload();
-        }
+        onRestart && onRestart();
       });
     }
-    return modal;
   }
 
+  /* =========================
+   *  EXPORTAR API UI
+   * ========================= */
   window.QRUI = {
     startModal,
     selectHeroModal,
     questionModal,
     formModal,
     endingModal,
-    close,
   };
 })();

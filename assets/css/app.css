@@ -117,7 +117,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: url("../img/fondo.png") center / cover no-repeat, #000; /* fallback */
+  background: url("../img/fondo.jpg") center / cover no-repeat, #000; /* fallback */
   border: 8px solid var(--gray-dark);
   outline: 6px solid #fff;
   box-shadow: 0 0 0 6px var(--gray-dark), 0 8px 0 var(--black);
@@ -126,7 +126,7 @@ body {
   min-height: 200px;
 }
 .qr-stage--mobile {
-  background: url("../img/fondo.png") center / cover no-repeat, #000;
+  background: url("../img/fondo.jpg") center / cover no-repeat, #000;
 }
 #qr-canvas {
   display: block;
@@ -145,11 +145,16 @@ body {
 }
 
 /* ► Garantizar fondo en selección y juego SIEMPRE (también con modal abierto) */
+/* ► Fondo estático SOLO en selección (también con modal abierto) */
 #qr-stage.qr-stage--select,
+#qr-stage.qr-stage--select.qr-stage--modal-open {
+  background: url("../img/fondo.jpg") center / cover no-repeat, #000 !important;
+}
+
+/* ► En modo juego NO usamos imagen de fondo (evita doble fondo en responsive) */
 #qr-stage.qr-stage--game,
-#qr-stage.qr-stage--select.qr-stage--modal-open,
 #qr-stage.qr-stage--game.qr-stage--modal-open {
-  background: url("../img/fondo.png") center / cover no-repeat, #000 !important;
+  background: #000 !important;
 }
 
 /* =================== MODALES =================== */
@@ -167,6 +172,21 @@ body {
 .qr-modal--select {
   background: transparent !important;
   backdrop-filter: none !important;
+}
+
+/* Fondo específico para la selección de personaje (siempre fondo.png) */
+.qr-modal--select::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../img/fondo.jpg") center / cover no-repeat, #000;
+  z-index: 0;
+}
+
+/* Asegurar que la tarjeta de selección queda por encima del fondo */
+.qr-modal--select .qr-card--select {
+  position: relative;
+  z-index: 1;
 }
 
 /* ===== PORTADA (INICIO) ===== */
@@ -539,7 +559,7 @@ body {
 @media (max-width: 1024px) and (orientation: landscape) {
   #qr-stage.qr-stage--select,
   #qr-stage.qr-stage--select.qr-stage--modal-open {
-    background: url("../img/fondo.png") center / cover no-repeat, #000 !important;
+    background: url("../img/fondo.jpg") center / cover no-repeat, #000 !important;
   }
 }
 
@@ -881,21 +901,22 @@ body {
 .qr-stage::after {
   content: "";
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: clamp(64px, 12vw, 120px);
-  height: clamp(24px, 6vw, 60px);
+  top: 10px;
+  right: 10px;
+  width: clamp(48px, 9vw, 90px);
+  height: clamp(18px, 4.5vw, 34px);
   background: url("../img/logoversus.png") no-repeat 50% 50% / contain;
   opacity: 0.6;
   pointer-events: none;
   z-index: 10005;
 }
+
 @media (max-width: 480px) {
   .qr-stage::after {
     top: 8px;
     right: 8px;
-    width: 80px;
-    height: 40px;
+    width: 64px;
+    height: 32px;
   }
 }
 
