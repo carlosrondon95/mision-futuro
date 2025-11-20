@@ -11,11 +11,11 @@
   --primary: var(--brand-light);
   --ink: var(--gray-dark);
 
-  /* Desktop/base: NO TOCAR posiciones de START */
+  /* Desktop/base: posición de START */
   --start-bottom: 6%;
   --start-width: clamp(120px, 12vw, 180px);
 
-  /* Ajustes móviles */
+  /* Ajustes móviles (si más adelante quieres usarlos desde JS) */
   --start-left-portrait: 50%;
   --start-bottom-portrait: 7%;
   --start-left-landscape: 50%;
@@ -81,7 +81,6 @@ body {
   font-weight: 600;
 }
 .qr-badge {
-  /* corregido: quitado --var(...) inválido */
   background: var(--brand-dark);
   color: #fff;
   padding: 4px 8px;
@@ -110,7 +109,7 @@ body {
 }
 
 /* =================== STAGE =================== */
-/* ► Fondo por defecto = fondo.png (también para selección y juego) */
+/* ► Fondo por defecto = fondo.jpg (también para selección y juego) */
 .qr-stage {
   position: relative;
   width: 100%;
@@ -166,14 +165,14 @@ body {
   justify-content: center;
   z-index: 10006;
 }
-/* INICIO y SELECCIÓN sin velo */
+/* INICIO y SELECCIÓN sin velo (START ya no usa modal, pero lo dejamos inofensivo) */
 .qr-modal--start,
 .qr-modal--select {
   background: transparent !important;
   backdrop-filter: none !important;
 }
 
-/* Fondo específico para la selección de personaje (siempre fondo.png) */
+/* Fondo específico para la selección de personaje (siempre fondo.jpg) */
 .qr-modal--select::before {
   content: "";
   position: absolute;
@@ -188,53 +187,63 @@ body {
   z-index: 1;
 }
 
-/* ===== PORTADA (INICIO) ===== */
-.qr-card--start {
+/* ===== PORTADA (INICIO) - CAPA Y BOTÓN START ===== */
+
+/* Capa que cuelga del stage: controla posición global del START */
+#qr-start-layer {
   position: absolute;
   inset: 0;
+  display: flex;
+  justify-content: center; /* centra horizontalmente respecto al stage */
+  align-items: flex-end; /* pega el contenido a la parte baja del stage */
+  pointer-events: none; /* solo los hijos activan clicks */
+  z-index: 10010;
+}
+
+/* La card ocupa todo el alto y delega el alineado al contenedor interno */
+.qr-card--start {
+  width: 100%;
+  height: 100%;
   background: transparent !important;
   border: 0 !important;
   outline: none !important;
   box-shadow: none !important;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Contenedor del botón: aquí usamos justify y padding-bottom */
+.qr-start-cta2 {
   width: 100%;
-  height: 100%;
-  text-align: center;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-}
-/* START base (NO TOCAR posición) */
-#qr-stage .qr-start-cta2 {
-  position: absolute;
-  left: 123%;
-  bottom: 8%;
-  transform: translateX(-50%);
   display: flex;
   justify-content: center;
-  pointer-events: auto;
-  z-index: 10010;
+  padding-bottom: var(--start-bottom);
+  pointer-events: auto; /* el botón recibe los eventos */
 }
-#qr-stage .qr-start-btn2__icon {
-  width: var(--start-width);
-  height: auto;
-}
-#qr-stage .qr-start-btn2 {
+
+/* Botón START */
+.qr-start-btn2 {
   all: unset;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-#qr-stage .qr-start-btn2:focus-visible {
+.qr-start-btn2:focus-visible {
   outline: 3px solid #000;
   outline-offset: 2px;
 }
-#qr-stage .qr-start-btn2__icon {
+.qr-start-btn2__icon {
   display: block;
   width: var(--start-width);
   max-width: 92vw;
   height: auto;
   user-select: none;
   -webkit-user-drag: none;
+  image-rendering: pixelated;
   animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
 }
 
@@ -735,7 +744,7 @@ body {
   color: #fff;
 }
 .qr-pad--landscape {
-  background: transparent;
+  background: transparent; /* sin franja en horizontal */
 }
 .qr-pad--portrait {
   display: flex;
@@ -1001,21 +1010,23 @@ body {
     background-color: #000;
   }
 }
+
+/* START en portrait móvil: más pequeño y algo más arriba (vía variable) */
 @media (max-width: 768px) and (orientation: portrait) {
   :root {
     --start-width: clamp(80px, 40vw, 120px);
-  }
-  #qr-stage .qr-start-cta2 {
-    left: 55%;
-    bottom: 7%;
-    /*transform: translateX(-50%);*/
+    --start-bottom: 7%;
   }
 }
 
 /* ====== HORIZONTAL (LANDSCAPE) ====== */
 @media (max-width: 1024px) and (orientation: landscape) {
+  /* Móvil horizontal: botón un poco más abajo y tamaño ligado a la altura del stage */
   :root {
-    --start-width: clamp(80px, 25vw, 110px);
+    /* Tamaño base escalado por la altura (72vh del stage) */
+    --start-width: clamp(80px, 18vh, 110px);
+    /* Menos padding inferior → más pegado al borde inferior del stage */
+    --start-bottom: 3%;
   }
 
   #qr-app {
@@ -1033,7 +1044,7 @@ body {
     overflow: hidden;
   }
 
-  /* 🔥 Canvas estirado a todo el alto del stage en horizontal */
+  /* Canvas estirado a todo el alto del stage en horizontal */
   #qr-canvas {
     width: 100% !important;
     height: 100% !important;
@@ -1041,14 +1052,8 @@ body {
   }
 }
 
-/* START en landscape móvil: centrado similar a portrait */
-body.is-mobile #qr-stage .qr-start-cta2 {
-  left: 53%;
-  bottom: 6%;
-  /*transform: translateX(-50%);*/
-}
 
-/* Preguntas un poco más grandes (subidón ligero) */
+/* Preguntas un poco más pequeñas y compactas */
 .qr-card--question .qr-q {
   font-size: clamp(14px, 1.8vw, 17px) !important;
   line-height: 1.2 !important;
@@ -1097,7 +1102,7 @@ body.is-mobile #qr-stage .qr-start-cta2 {
   animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
 }
 
-/* ► Brillo en SEND (extra por si el botón fuera <button> y no imagen) */
+/* Brillo en SEND (por si fuera <button>) */
 .qr-card--form .qr-btn {
   animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
 }
