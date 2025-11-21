@@ -1,6 +1,7 @@
 <?php
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
   exit;
+}
 
 class QR_Assets
 {
@@ -11,7 +12,17 @@ class QR_Assets
 
   public function enqueue()
   {
-    if (!is_singular() || !has_shortcode(get_post_field('post_content', get_the_ID()), 'quiz_runner')) {
+    /**
+     * ANTES:
+     *  - Filtrábamos por has_shortcode() sobre post_content.
+     *  - Elementor no guarda el shortcode en post_content sino en metadatos/plantillas.
+     *  - Resultado: no cargaban JS/CSS y el juego no arrancaba.
+     *
+     * AHORA:
+     *  - Cargamos assets en cualquier página singular.
+     *  - Esto hace que funcione tanto con Gutenberg como con Elementor.
+     */
+    if (!is_singular()) {
       return;
     }
 
@@ -77,7 +88,7 @@ class QR_Assets
       true
     );
 
-    // 🔊 AUDIO (nuevo)
+    // AUDIO
     wp_enqueue_script(
       'qr-audio',
       QR_PLUGIN_URL . 'assets/js/audio.js',
@@ -86,7 +97,7 @@ class QR_Assets
       true
     );
 
-    // Game + Bootstrap (bootstrap depende de audio para que QRAudio exista)
+    // Game + Bootstrap
     wp_enqueue_script(
       'qr-game',
       QR_PLUGIN_URL . 'assets/js/game.js',
