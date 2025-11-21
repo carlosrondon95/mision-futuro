@@ -19,21 +19,6 @@
     setBadge(idx + 1);
   });
 
-  // ===== Resolver base de assets =====
-  function resolveAssetsBase() {
-    if (window.QR_ASSETS_BASE) {
-      return String(window.QR_ASSETS_BASE).replace(/\/?$/, "/");
-    }
-    const scripts = document.scripts || document.getElementsByTagName("script");
-    for (let i = 0; i < scripts.length; i++) {
-      const src = scripts[i].src || "";
-      const m = src.match(/^(.*\/assets\/)js\/ui\.js(?:\?.*)?$/i);
-      if (m) return m[1];
-    }
-    return "assets/";
-  }
-  const ASSETS = resolveAssetsBase();
-
   // ===== Infra modal =====
   const stageEl = document.getElementById("qr-stage");
   let root = document.querySelector("#qr-stage #qr-modal-root");
@@ -106,49 +91,15 @@
     if (scale < 1) card.style.transform = `scale(${scale})`;
   }
 
-  // ===== Helpers de orientación =====
-  function isPortrait() {
-    return window.matchMedia("(orientation: portrait)").matches;
-  }
-
-  // ===== Portada: elección de imagen =====
-  function pickStartImageSrc() {
-    if (isMobile() && isPortrait()) {
-      return `${ASSETS}img/portadaresponsive.jpg`;
-    }
-    return `${ASSETS}img/inicio.jpg`;
-  }
-
-  // ===== Aplicar/actualizar fondo de portada vía variables CSS =====
-  let _prevStageStyle = null;
-
+  // ===== Portada: fondo controlado por clases CSS =====
   function applyStartBg() {
     if (!stageEl) return;
-    _prevStageStyle = stageEl.getAttribute("style") || "";
     stageEl.classList.add("qr-stage--start");
-    stageEl.style.setProperty(
-      "--start-bg-img",
-      `url("${pickStartImageSrc()}")`
-    );
-  }
-
-  function updateStartBgImageOnly() {
-    if (!stageEl || !stageEl.classList.contains("qr-stage--start")) return;
-    stageEl.style.setProperty(
-      "--start-bg-img",
-      `url("${pickStartImageSrc()}")`
-    );
   }
 
   function clearStartBg() {
     if (!stageEl) return;
     stageEl.classList.remove("qr-stage--start");
-    if (_prevStageStyle !== null) {
-      stageEl.setAttribute("style", _prevStageStyle);
-      _prevStageStyle = null;
-    } else {
-      stageEl.removeAttribute("style");
-    }
   }
 
   // ===== Pantalla de inicio (sin modal) =====
@@ -166,7 +117,7 @@
       <div class="qr-card qr-card--start">
         <div class="qr-start-cta2">
           <button class="qr-start-btn2" id="qrStartBtn" type="button" aria-label="Jugar">
-            <img src="${ASSETS}img/buttons/start.png" alt="Jugar" class="qr-start-btn2__icon" />
+            <span class="qr-start-btn2__icon" aria-hidden="true"></span>
           </button>
         </div>
       </div>
@@ -174,14 +125,10 @@
 
     if (stageEl) stageEl.appendChild(layer);
 
-    const onOrient = () => updateStartBgImageOnly();
-    window.addEventListener("orientationchange", onOrient);
-
     let keyHandler;
 
     const cleanup = () => {
       if (keyHandler) window.removeEventListener("keydown", keyHandler);
-      window.removeEventListener("orientationchange", onOrient);
 
       const existing = document.getElementById("qr-start-layer");
       if (existing && existing.parentNode) {
@@ -384,7 +331,7 @@
         </div>
         <div class="qr-start-actions">
           <button class="qr-btn--img" id="btnSend" type="submit" aria-label="Enviar">
-            <img src="${ASSETS}img/buttons/send.png" alt="Enviar" class="qr-btn--img__icon" />
+            <span class="qr-btn--img__icon" aria-hidden="true"></span>
           </button>
         </div>
       </form>
@@ -547,6 +494,14 @@
       .trim();
   }
 
+  function makeSlug(idOrLabel) {
+    return String(idOrLabel || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036F]/g, "")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+  }
+
   const ACADEMY_META = {
     AGEADMIN: {
       id: "AGEADMIN",
@@ -664,6 +619,12 @@
     setTimeout(() => fitCardToStage(card, 0.85), 120);
   }
 
+  function logoClass(meta) {
+    if (!meta) return "";
+    const slug = makeSlug(meta.id || meta.label);
+    return slug ? ` qr-ceremony-logo--${slug}` : "";
+  }
+
   function endingModal(result, onRestart) {
     if (!root) return;
 
@@ -672,37 +633,27 @@
     const secondMeta = winnersRaw[1] ? metaFromDecorated(winnersRaw[1]) : null;
     const hasSecond = !!(secondMeta && secondMeta.logo);
 
-    const CUP_SRC = `${ASSETS}img/copa.png`;
-    const LOGO_BASE = `${ASSETS}img/logos/`;
-    const RESTART_SRC = `${ASSETS}img/buttons/restart.png`;
-
     let centerHtml = "";
     if (mainMeta && mainMeta.logo && !hasSecond) {
       centerHtml = `
         <div class="qr-ceremony-main qr-ceremony-main--single">
-          <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
-          <img src="${LOGO_BASE + mainMeta.logo}" alt="${
-        mainMeta.label
-      }" class="qr-ceremony-logo" />
-          <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
+          <div class="qr-ceremony-cup"></div>
+          <div class="qr-ceremony-logo${logoClass(mainMeta)}"></div>
+          <div class="qr-ceremony-cup"></div>
         </div>
       `;
     } else if (mainMeta && mainMeta.logo && hasSecond) {
       centerHtml = `
         <div class="qr-ceremony-main qr-ceremony-main--double">
-          <img src="${LOGO_BASE + mainMeta.logo}" alt="${
-        mainMeta.label
-      }" class="qr-ceremony-logo" />
-          <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
-          <img src="${LOGO_BASE + secondMeta.logo}" alt="${
-        secondMeta.label
-      }" class="qr-ceremony-logo" />
+          <div class="qr-ceremony-logo${logoClass(mainMeta)}"></div>
+          <div class="qr-ceremony-cup"></div>
+          <div class="qr-ceremony-logo${logoClass(secondMeta)}"></div>
         </div>
       `;
     } else {
       centerHtml = `
         <div class="qr-ceremony-main">
-          <img src="${CUP_SRC}" alt="Copa" class="qr-ceremony-cup" />
+          <div class="qr-ceremony-cup"></div>
         </div>
       `;
     }
@@ -736,7 +687,7 @@
       ${rolesHtml}
       <div class="qr-ceremony-actions">
         <button type="button" class="qr-ceremony-restart" aria-label="Reiniciar">
-          <img src="${RESTART_SRC}" alt="Volver a jugar" />
+          <span class="qr-ceremony-restart-icon" aria-hidden="true"></span>
         </button>
       </div>
     `;

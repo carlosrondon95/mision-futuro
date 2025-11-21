@@ -133,26 +133,25 @@ body {
   touch-action: none;
 }
 
-/* ====== Modo portada ====== */
+/* ====== MODO PORTADA (INICIO) ====== */
 .qr-stage.qr-stage--start {
   image-rendering: auto !important;
   background-color: #000;
-  background-image: var(--start-bg-img);
+  background-image: url("../img/inicio.jpg");
   background-position: 50% 50%;
   background-repeat: no-repeat;
-  background-size: var(--start-bg-size);
+  background-size: var(--start-bg-size, cover);
 }
 
-/* ► Fondo SELECCIÓN: siempre fondo.jpg detrás */
-#qr-stage.qr-stage--select,
-#qr-stage.qr-stage--select.qr-stage--modal-open {
-  background: url("../img/fondo.jpg") center / cover no-repeat, #000 !important;
-}
-
-/* ► Fondo JUEGO: solo negro, el fondo lo pinta el canvas */
-#qr-stage.qr-stage--game,
-#qr-stage.qr-stage--game.qr-stage--modal-open {
-  background: #000 !important;
+/* En móvil vertical usamos la portada responsive */
+@media (max-width: 768px) and (orientation: portrait) {
+  body.is-mobile #qr-stage.qr-stage--start {
+    background-image: url("../img/portadaresponsive.jpg");
+    background-size: contain !important;
+    background-position: center 0% !important;
+    background-repeat: no-repeat !important;
+    background-color: #000;
+  }
 }
 
 /* =================== MODALES =================== */
@@ -240,7 +239,12 @@ body {
   display: block;
   width: var(--start-width);
   max-width: 92vw;
-  height: auto;
+  /* caja con tamaño propio */
+  aspect-ratio: 3 / 1;
+  background-image: url("../img/buttons/start.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   user-select: none;
   -webkit-user-drag: none;
   image-rendering: pixelated;
@@ -1114,12 +1118,21 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-/* SEND = mismo tamaño y brillo que RESTART */
+/* SEND = mismo tamaño y brillo que RESTART, pero vía background */
 .qr-card--form .qr-btn--img__icon {
+  display: block;
   width: clamp(88px, 15vw, 132px) !important;
-  height: auto !important;
+  aspect-ratio: 3 / 1;
+  background-image: url("../img/buttons/send.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
 }
 
@@ -1309,4 +1322,172 @@ body {
   margin: 0 !important;
   font-size: clamp(12px, 1.5vw, 14px) !important;
   line-height: 1.3 !important;
+}
+
+/* =======================================================
+   OVERRIDE: IMÁGENES DE UI DESDE CSS
+   (START, SEND, RESTART, FONDO INICIO, LOGOS, COPA)
+   ======================================================= */
+
+/* Variables de imágenes (ajusta nombres/rutas si hace falta) */
+:root {
+  --start-bg-img: url("../img/inicio.jpg");
+  --start-icon-img: url("../img/start.png");
+  --send-icon-img: url("../img/send.png");
+  --restart-icon-img: url("../img/restart.png");
+}
+
+/* START por background, sin depender de src en ui.js */
+.qr-start-btn2 {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  width: var(--start-width);
+  max-width: 92vw;
+  aspect-ratio: 3 / 1;
+}
+.qr-start-btn2__icon {
+  display: none !important;
+}
+.qr-start-btn2::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: var(--start-icon-img);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  image-rendering: pixelated;
+  animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
+}
+
+/* SEND por background */
+.qr-card--form .qr-btn--img {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(88px, 15vw, 132px);
+  aspect-ratio: 4 / 1;
+}
+.qr-card--form .qr-btn--img__icon {
+  display: none !important;
+}
+.qr-card--form .qr-btn--img::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: var(--send-icon-img);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
+}
+@media (max-width: 1024px) and (orientation: landscape) {
+  .qr-card--form .qr-btn--img {
+    width: clamp(72px, 13vw, 104px) !important;
+  }
+}
+
+/* RESTART por background */
+.qr-ceremony-restart {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(380px, 100%);
+  aspect-ratio: 4 / 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.qr-ceremony-restart img {
+  display: none !important;
+}
+.qr-ceremony-restart::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: var(--restart-icon-img);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  animation: qr-colorPulse 1.25s ease-in-out infinite alternate;
+}
+@media (max-width: 1024px) and (orientation: landscape) {
+  .qr-ceremony-restart {
+    width: clamp(76px, 13vw, 110px) !important;
+  }
+}
+
+/* LOGOS + COPA por background-image */
+.qr-ceremony-logo,
+.qr-ceremony-cup {
+  display: block;
+  width: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+/* Respetamos tus max-width existentes para single/double */
+.qr-ceremony-main--single .qr-ceremony-logo {
+  max-width: 180px;
+}
+.qr-ceremony-main--double .qr-ceremony-logo {
+  max-width: 140px;
+}
+
+/* Copa genérica */
+.qr-ceremony-cup {
+  max-width: 120px;
+  aspect-ratio: 1 / 1;
+  background-image: url("../img/copa.png");
+}
+
+/* Ajuste móvil horizontal (mantiene tu max-height) */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .qr-ceremony-logo,
+  .qr-ceremony-cup {
+    max-height: 90px;
+  }
+}
+
+/* Slugs por academia → logo concreto (ajusta nombres/rutas) */
+.qr-ceremony-logo--jurispol {
+  background-image: url("../img/logos/jurispol.png");
+}
+.qr-ceremony-logo--prefortia {
+  background-image: url("../img/logos/prefortia.png");
+}
+.qr-ceremony-logo--forvide {
+  background-image: url("../img/logos/forvide.png");
+}
+.qr-ceremony-logo--dozenty {
+  background-image: url("../img/logos/dozenty.png");
+}
+*/ .qr-ceremony-logo--ageadmin {
+  background-image: url("../img/logos/ageadmin.png");
+}
+
+.qr-ceremony-logo--ageaux {
+  background-image: url("../img/logos/ageaux.png");
+}
+
+.qr-ceremony-logo--metodos {
+  background-image: url("../img/logos/metodos.png");
+}
+
+/* Variantes de JURISPOL */
+.qr-ceremony-logo--jurispoleb {
+  background-image: url("../img/logos/jurispoleb.png");
+}
+
+.qr-ceremony-logo--jurispolee {
+  background-image: url("../img/logos/jurispolee.png");
 }
