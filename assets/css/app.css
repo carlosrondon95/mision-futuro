@@ -747,7 +747,7 @@ body {
   }
 }
 
-/* Slugs por academia → logo concreto (coinciden con los id/slug del JS) */
+/* Slugs por academia → logo concreto (coinciden con ACADEMY_META.id en ui.js) */
 .qr-ceremony-logo--ageadmin {
   background-image: url("../img/logos/ageadmin.png");
 }
@@ -772,11 +772,6 @@ body {
 .qr-ceremony-logo--jurispolee {
   background-image: url("../img/logos/jurispolee.png");
 }
-/* Si añades más:
-.qr-ceremony-logo--loquesea {
-  background-image: url("../img/logos/loquesea.png");
-}
-*/
 
 /* =================== HONEYPOT =================== */
 .qr-hp {
