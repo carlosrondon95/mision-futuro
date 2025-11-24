@@ -320,14 +320,10 @@
           <div class="qr-error" id="errEmail"></div>
         </div>
         <div class="qr-row qr-consent">
-          <label class="qr-consent-label">
-            <input id="fConsent" type="checkbox" class="qr-consent-checkbox">
-            <span>
-              Acepto la
-              <a id="policyLink" class="qr-link" href="https://versuselearning.com/politica-de-privacidad/" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
-            </span>
-          </label>
-          <div class="qr-error" id="errConsent"></div>
+          <span class="qr-consent-label">
+            Al pulsar SEND, estoy aceptando la 
+            <a id="policyLink" class="qr-link" href="https://versuselearning.com/politica-de-privacidad/" target="_blank" rel="noopener noreferrer">Política de Privacidad</a>
+          </span>
         </div>
         <div class="qr-start-actions">
           <button class="qr-btn--img" id="btnSend" type="submit" aria-label="Enviar">
@@ -368,16 +364,15 @@
     const nameI = card.querySelector("#fName");
     const mailI = card.querySelector("#fEmail");
     const phoneI = card.querySelector("#fPhone");
-    const consI = card.querySelector("#fConsent");
 
     const errName = card.querySelector("#errName");
     const errEmail = card.querySelector("#errEmail");
     const errPhone = card.querySelector("#errPhone");
-    const errCons = card.querySelector("#errConsent");
 
     const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
     function setErr(inputEl, errEl, msg) {
+      if (!errEl) return;
       if (msg) {
         errEl.textContent = msg;
         inputEl && inputEl.classList.add("is-invalid");
@@ -439,22 +434,11 @@
       return true;
     }
 
-    function validateConsent() {
-      if (!consI.checked)
-        return (
-          setErr(consI, errCons, "Debes aceptar la Política de Privacidad."),
-          false
-        );
-      setErr(consI, errCons, "");
-      return true;
-    }
-
     function validateAll() {
       const a = validateName(),
         b = validateEmail(),
-        c = validatePhone(),
-        d = validateConsent();
-      return a && b && c && d;
+        c = validatePhone();
+      return a && b && c;
     }
 
     nameI.addEventListener("input", validateName);
@@ -463,7 +447,6 @@
       sanitizePhone();
       validatePhone();
     });
-    consI.addEventListener("change", validateConsent);
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -471,7 +454,6 @@
         if (!validateName()) return nameI.focus();
         if (!validateEmail()) return mailI.focus();
         if (!validatePhone()) return phoneI.focus();
-        if (!validateConsent()) return consI.focus();
         return;
       }
       close();
@@ -480,7 +462,7 @@
           name: nameI.value.trim(),
           email: mailI.value.trim(),
           phone: phoneI.value.trim(),
-          consent: consI.checked ? "1" : "0",
+          consent: "1", // siempre se considera aceptada al pulsar SEND
         });
     });
   }
