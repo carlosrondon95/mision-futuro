@@ -1,4 +1,4 @@
-# MISIÓN FUTURO - Interactive Quiz Runner
+# MISIÓN FUTURO — Interactive Quiz Runner
 
 ![WordPress](https://img.shields.io/badge/WordPress-21759B?style=for-the-badge&logo=wordpress&logoColor=white)
 ![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
@@ -40,6 +40,36 @@ questionnaire experience, increasing user engagement and completion rates.
   operations.
 - **Styling**: Responsive CSS for layout and retro aesthetics.
 
+## 📁 Project Structure
+
+```
+mision-futuro/
+├── quiz-runner.php          # Plugin entry point
+├── includes/
+│   ├── class-qr-plugin.php      # Core plugin setup
+│   ├── class-qr-assets.php      # Script & style enqueue
+│   ├── class-qr-ajax.php        # AJAX handler (lead capture + CSV)
+│   ├── class-qr-mailer.php      # SMTP email integration
+│   └── class-qr-shortcode.php   # [quiz_runner] shortcode
+├── templates/
+│   └── app.php                  # Game HTML template
+└── assets/
+    ├── css/app.css              # All styles (responsive + retro theme)
+    ├── js/
+    │   ├── vendor/microloop.js  # Minimal game loop & input lib
+    │   ├── data.js              # Questions, scoring engine & academy matching
+    │   ├── game.js              # Game engine (physics, rendering, logic)
+    │   ├── ui.js                # UI modals (start, select, question, form, ceremony)
+    │   ├── bootstrap.js         # Initialization & asset loading
+    │   ├── audio.js             # Sound manager
+    │   ├── fs.js                # Fullscreen manager (iOS/Android)
+    │   ├── viewport.js          # Responsive viewport scaling
+    │   └── virtualpad.js        # Touch controls
+    ├── audio/                   # Music & SFX
+    ├── img/                     # Sprites, backgrounds & logos
+    └── fonts/                   # Game Over pixel font
+```
+
 ## 📦 Installation
 
 1. **Download** the repository and compress the folder into a `.zip` file.
@@ -47,10 +77,6 @@ questionnaire experience, increasing user engagement and completion rates.
 3. Click **Upload Plugin** and select your `.zip` file.
 4. **Activate** the plugin.
 5. Add the shortcode `[quiz_runner]` to any page or post.
-
-## 📸 Screenshots
-
-_(Add your game screenshots here: Start Screen, Gameplay, Final Form)_
 
 ## 📄 License
 

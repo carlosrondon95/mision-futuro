@@ -1,8 +1,10 @@
 // assets/js/data.js
+// Questions, scoring engine, winner selection, and academy bullets.
+// Exposes window.QRData for use by game.js, ui.js, and bootstrap.js.
 (function () {
-  // =========================
-  //  PREGUNTAS (versión final)
-  // =========================
+  // =========================================================================
+  //  QUESTIONS
+  // =========================================================================
   const QUESTIONS = [
     {
       id: "age",
@@ -47,17 +49,17 @@
     {
       id: "physical",
       q: "¿Aceptarías pruebas físicas durante la oposición?",
-      opts: ["Sí", "Prefiero evitarlas", "Me es indiferente"], // ← añadido
+      opts: ["Sí", "Prefiero evitarlas", "Me es indiferente"],
     },
     {
       id: "maneuvers",
       q: "¿Te interesan las maniobras?",
-      opts: ["Sí", "Prefiero evitarlas", "Me es indiferente"], // ← añadido
+      opts: ["Sí", "Prefiero evitarlas", "Me es indiferente"],
     },
     {
       id: "contact",
       q: "¿Quieres un trabajo con contacto directo con personas?",
-      opts: ["Sí", "No", "Me es indiferente"], // ← añadido
+      opts: ["Sí", "No", "Me es indiferente"],
     },
     {
       id: "mode",
@@ -85,19 +87,19 @@
     },
   ];
 
-  // =========================
-  //  ESTADO
-  // =========================
+  // =========================================================================
+  //  SCORE STATE
+  // =========================================================================
   function freshScore() {
     return {
       PREFORTIA: 0,
-      JURISPOL: 0, // se fija a max(B, E)
+      JURISPOL: 0,
       FORVIDE: 0,
       AGE360: 0,
       MÉTODOS: 0,
       DOZENTY: 0,
       __juris: { Básica: 0, Ejecutiva: 0 },
-      __age360: null, // 'Auxiliar' | 'Administrativo'
+      __age360: null,
       __flags: {
         docencia: false,
         entornoOfi: false,
@@ -108,9 +110,9 @@
     };
   }
 
-  // =========================
+  // =========================================================================
   //  HELPERS
-  // =========================
+  // =========================================================================
   function normalize(s) {
     return (s || "")
       .toString()
@@ -127,15 +129,15 @@
     score.__juris[scale] += pts;
   };
 
-  // =========================
-  //  MOTOR DE PUNTUACIÓN (v5 ajustado)
-  // =========================
+  // =========================================================================
+  //  SCORING ENGINE
+  // =========================================================================
   function applyScoring(score, choice) {
     const id = choice.id;
     const v = normalize(choice.value);
 
     switch (id) {
-      // 1) EDAD
+      // 1) Edad
       case "age": {
         if (normalize("16-18 años") === v) {
           addJuris(score, "Básica", 2);
@@ -176,7 +178,7 @@
         break;
       }
 
-      // 2) ESTUDIOS (+ rama AGE360)
+      // 2) Estudios (+ rama AGE360)
       case "studies": {
         const isESO = normalize("ESO") === v;
         const isBach = normalize("Bachillerato") === v;
@@ -212,13 +214,13 @@
         break;
       }
 
-      // 3) TIPO DE TRABAJO
+      // 3) Tipo de trabajo
       case "type": {
         if (
           normalize("seguridad y accion") === v ||
           normalize("seguridad y acción") === v
         ) {
-          add(score, "PREFORTIA", 3); // ↑ equilibrado
+          add(score, "PREFORTIA", 3);
           addJuris(score, "Básica", 3);
           add(score, "FORVIDE", 2);
           add(score, "MÉTODOS", 1);
@@ -252,12 +254,12 @@
         break;
       }
 
-      // 4) ENTORNO
+      // 4) Entorno
       case "env": {
         if (normalize("terreno / operativo") === v) {
-          add(score, "PREFORTIA", 3); // ↑ equilibrado
+          add(score, "PREFORTIA", 3);
           addJuris(score, "Básica", 3);
-          add(score, "MÉTODOS", 1); // ↓ equilibrado
+          add(score, "MÉTODOS", 1);
         }
         if (normalize("mixto (terreno/oficina)") === v) {
           add(score, "PREFORTIA", 1);
@@ -277,7 +279,7 @@
         break;
       }
 
-      // 5) TURNOS
+      // 5) Turnos
       case "shifts": {
         if (normalize("sin problema") === v) {
           add(score, "PREFORTIA", 2);
@@ -294,12 +296,12 @@
         break;
       }
 
-      // 6) PRUEBAS FÍSICAS
+      // 6) Pruebas físicas
       case "physical": {
         if (normalize("si") === v || normalize("sí") === v) {
-          add(score, "PREFORTIA", 3); // ↑ equilibrado
+          add(score, "PREFORTIA", 3);
           addJuris(score, "Básica", 3);
-          add(score, "MÉTODOS", 1); // ↓ equilibrado
+          add(score, "MÉTODOS", 1);
           score.__flags.operativoPack = true;
         }
         if (normalize("prefiero evitarlas") === v) {
@@ -308,17 +310,16 @@
           add(score, "FORVIDE", 3);
           addJuris(score, "Ejecutiva", 2);
         }
-        // NUEVO: indiferente (reparto suave y neutro)
         if (normalize("me es indiferente") === v) {
           addJuris(score, "Básica", 1);
-          addJuris(score, "Ejecutiva", 1); // efecto neto ≈ +1 a JURISPOL
+          addJuris(score, "Ejecutiva", 1);
           add(score, "FORVIDE", 1);
           add(score, "AGE360", 1);
         }
         break;
       }
 
-      // 7) MANIOBRAS
+      // 7) Maniobras
       case "maneuvers": {
         const isYes = v === normalize("si") || v === normalize("sí");
         const isNo = v === normalize("prefiero evitarlas");
@@ -328,7 +329,6 @@
           add(score, "MÉTODOS", 3);
           score.__flags.maneuversYes = true;
         } else if (isNo) {
-          // efecto suave y muy repartido
           add(score, "PREFORTIA", 1);
           add(score, "FORVIDE", 1);
           add(score, "AGE360", 1);
@@ -336,22 +336,18 @@
           addJuris(score, "Básica", 1);
           addJuris(score, "Ejecutiva", 1);
         } else if (isInd) {
-          // <<< AQUÍ EL AJUSTE >>>
           add(score, "PREFORTIA", 1);
           add(score, "FORVIDE", 1);
           add(score, "AGE360", 1);
           add(score, "DOZENTY", 1);
-
-          // SUBIR MÉTODOS RESPECTO AL RESTO
-          add(score, "MÉTODOS", 2); // antes 1 → ahora 2
-
+          add(score, "MÉTODOS", 2);
           addJuris(score, "Básica", 1);
           addJuris(score, "Ejecutiva", 1);
         }
         break;
       }
 
-      // 8) CONTACTO
+      // 8) Contacto
       case "contact": {
         if (normalize("si") === v || normalize("sí") === v) {
           add(score, "PREFORTIA", 1);
@@ -362,7 +358,7 @@
           add(score, "MÉTODOS", 1);
           add(score, "DOZENTY", 1);
         } else if (normalize("no") === v) {
-          add(score, "AGE360", 1); // ambas válidas en AGE360
+          add(score, "AGE360", 1);
         } else if (normalize("me es indiferente") === v) {
           add(score, "AGE360", 1);
           add(score, "FORVIDE", 1);
@@ -370,7 +366,7 @@
         break;
       }
 
-      // 9) MODO
+      // 9) Modo de estudio
       case "mode": {
         if (normalize("100% online") === v) {
           add(score, "PREFORTIA", 1);
@@ -386,7 +382,7 @@
         break;
       }
 
-      // 10) HORAS
+      // 10) Horas de estudio
       case "hours": {
         if (normalize("menos de 10h") === v) {
           add(score, "MÉTODOS", 1);
@@ -408,20 +404,20 @@
         break;
       }
 
-      // 11) VALORAS
+      // 11) Objetivo
       case "goal": {
         if (normalize("estabilidad laboral y salario") === v) {
           add(score, "PREFORTIA", 1);
           addJuris(score, "Básica", 1);
           addJuris(score, "Ejecutiva", 1);
-          add(score, "FORVIDE", 3); // ↑
+          add(score, "FORVIDE", 3);
           add(score, "AGE360", 2);
         }
         if (normalize("crecimiento profesional") === v) {
           add(score, "PREFORTIA", 1);
           addJuris(score, "Ejecutiva", 2);
           add(score, "AGE360", 1);
-          add(score, "MÉTODOS", 1); // ↓
+          add(score, "MÉTODOS", 1);
         }
         if (
           normalize("impacto social / vocacion docente") === v ||
@@ -437,7 +433,7 @@
       }
     }
 
-    // Flags auxiliares
+    // Auxiliary flags
     if (id === "type") window.__qr_lastType = choice.value;
     if (id === "env") window.__qr_lastEnv = choice.value;
     if (id === "physical") window.__qr_lastPhysical = choice.value;
@@ -461,11 +457,10 @@
     }
   }
 
-  // =========================
-  //  GANADOR (top1/top2)
-  // =========================
+  // =========================================================================
+  //  WINNER SELECTION (top1 / top2)
+  // =========================================================================
   function winner(score) {
-    // Anti-doble-conteo de Jurispol
     const b = (score.__juris && score.__juris["Básica"]) || 0;
     const e = (score.__juris && score.__juris["Ejecutiva"]) || 0;
     score["JURISPOL"] = Math.max(b, e);
@@ -478,14 +473,12 @@
     if (!entries.length || entries[0][1] <= 0)
       return { top1: null, top2: null };
 
-    // Reordenadores suaves (solo si empatan)
+    // Tie-breakers (only reorder when scores are equal)
     function applyTieBreakers(list) {
-      // Maniobras SÍ → MÉTODOS primero
       if (score.__flags.maneuversYes) {
         const iM = list.indexOf("MÉTODOS");
         if (iM >= 0) list.splice(0, 0, list.splice(iM, 1)[0]);
       }
-      // Docencia + oficina + horario estable → DOZENTY primero, AGE360 segunda si está
       if (
         score.__flags.docencia &&
         score.__flags.entornoOfi &&
@@ -503,7 +496,7 @@
     let candidateKeys = entries.slice(0, 3).map((e) => e[0]);
     candidateKeys = applyTieBreakers(candidateKeys);
 
-    // Umbral del segundo (cap 2)
+    // Second-place threshold (cap 2)
     const top1Val = score[candidateKeys[0]] || 0;
     const top2Val = score[candidateKeys[1]] || 0;
     const takeSecond =
@@ -537,9 +530,9 @@
     };
   }
 
-  // =========================
-  //  BULLETS
-  // =========================
+  // =========================================================================
+  //  BULLETS (descriptors per academy)
+  // =========================================================================
   function bullets(name) {
     const base =
       name && name.startsWith("JURISPOL")
@@ -595,6 +588,6 @@
     }
   }
 
-  // Exponer API
+  // Expose API
   window.QRData = { QUESTIONS, freshScore, applyScoring, winner, bullets };
 })();

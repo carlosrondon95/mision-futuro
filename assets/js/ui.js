@@ -1,3 +1,30 @@
+// assets/js/ui.js
+//
+// Toda la capa visual (modales, formularios, ceremonia) que se superpone
+// al canvas del juego. Genera el HTML dinámicamente y lo inyecta en #qr-stage.
+//
+// Mapa rápido del fichero:
+//
+//   Utilidades
+//   ├─ badge / modal infra   → contador "3/12", open/close de modales, eventos
+//   ├─ fitCardToStage()      → escala las tarjetas para que quepan en el stage
+//   └─ space scroll guard    → evita scroll accidental con barra espaciadora
+//
+//   Modales (en orden de aparición durante el juego)
+//   ├─ startModal()          → pantalla de inicio con botón play
+//   ├─ selectHeroModal()     → selector de personaje (hombre / mujer)
+//   ├─ questionModal()       → muestra pregunta con opciones
+//   ├─ formModal()           → formulario final (nombre, email, teléfono + validación)
+//   └─ endingModal()         → ceremonia de asignación: logos, roles, restart
+//
+//   Datos de academias
+//   ├─ ACADEMY_META           → mapa id → { label, logo, role } para las 8 academias
+//   ├─ metaFromDecorated()    → traduce "JURISPOL – Escala Ejecutiva" → ACADEMY_META.JURISPOLEE
+//   └─ extractWinners()       → normaliza el resultado de winner() para la ceremonia
+//
+//   Bonus
+//   └─ QRUI.controls          → CSS vars para posicionar el botón start en móvil
+//
 (function () {
   // ===== Util: total de puertas =====
   function getTotalDoors() {

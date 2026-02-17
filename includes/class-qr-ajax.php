@@ -84,6 +84,19 @@ class QR_Ajax
 
     fclose($fh);
 
+    // === Envío de email ===
+    $subject = 'Nuevo Lead Misión Futuro: ' . $name;
+    $body = "<h2>Nuevo registro en Misión Futuro</h2>
+             <p><strong>Nombre:</strong> $name</p>
+             <p><strong>Email:</strong> $email</p>
+             <p><strong>Teléfono:</strong> $phone</p>
+             <p><strong>Academia 1:</strong> $academy1</p>
+             <p><strong>Academia 2:</strong> $academy2</p>
+             <p><strong>Fecha:</strong> $fecha</p>";
+
+    $mailer = new QR_Mailer();
+    $sent = $mailer->send('tucorreo@ejemplo.com', $subject, $body); // TODO: Configurable
+
     wp_send_json_success(['message' => '¡Gracias! Tus datos se han registrado correctamente.']);
   }
 }

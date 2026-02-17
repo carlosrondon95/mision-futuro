@@ -1,4 +1,23 @@
 // assets/js/game.js
+//
+// Motor principal del juego. Toda la lógica de gameplay vive aquí porque
+// separar física, rendering y spawning en ficheros sueltos añadía complejidad
+// sin beneficio real (no usamos bundler).
+//
+// Mapa rápido del fichero:
+//
+//   Clase QRGame
+//   ├─ constructor()        → estado inicial, hero, cámara, input, game loop
+//   ├─ clearStageBgForPlay  → quita el fondo estático del stage durante el juego
+//   ├─ lockInput / queueJump→ bloqueo temporal para evitar saltos fantasma al cerrar modales
+//   ├─ createObstacles()    → genera rocas aleatorias entre puertas + murallas límite
+//   ├─ resolveObstacles()   → colisiones AABB del héroe contra obstáculos
+//   ├─ spawnFlyer / pickFlyerType → decoración animada (cometas, naves, pájaros, marcianos)
+//   ├─ update(dt)           → bucle principal: input → física → colisiones → puertas → flyers
+//   ├─ tryJump()            → salto con coyote time y doble salto
+//   ├─ finish()             → calcula ganador y lanza la ceremonia
+//   └─ render()             → fondo parallax, puertas/trofeo, obstáculos, flyers, sombra, héroe
+//
 (function () {
   const { createLoop, Keys } = window.MicroLoop;
   const { QUESTIONS, freshScore, applyScoring, winner, bullets } =

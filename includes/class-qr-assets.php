@@ -49,7 +49,7 @@ class QR_Assets
       true
     );
 
-    // UI/Data
+    // Data (questions + scoring)
     wp_enqueue_script(
       'qr-data',
       QR_PLUGIN_URL . 'assets/js/data.js',
