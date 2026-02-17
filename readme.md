@@ -1,74 +1,57 @@
-# 🚀 MISIÓN FUTURO
+# MISIÓN FUTURO - Interactive Quiz Runner
 
-**MISIÓN FUTURO** is a mini web videogame integrated into WordPress.  
-It transforms a traditional questionnaire into an interactive experience where the user progresses through a small 2D runner, dodges obstacles, and answers questions along the way.
+![WordPress](https://img.shields.io/badge/WordPress-21759B?style=for-the-badge&logo=wordpress&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
-The goal is to make data collection more engaging and dynamic, delivering a smooth, retro-styled experience.
+**Misión Futuro** transforms traditional data collection into an engaging **2D
+pixel-art runner game**. Designed as a WordPress plugin, it gamifies the
+questionnaire experience, increasing user engagement and completion rates.
 
----
+## 🚀 Key Features
 
-## 🎮 How It Works
+### 🎮 Gamified Experience
 
-- The player moves through a retro-style environment.  
-- Each door in the path corresponds to a questionnaire question.  
-- The user selects answers while dodging obstacles.  
-- At the end, a form appears requesting name, email, and phone.  
-- The game calculates the recommended academies based on the answers.  
-- A final small “assignment ceremony” displays the results.  
+- **Interactive Gameplay**: Users control a character in a retro-style
+  environment, dodging obstacles to reach "question stations."
+- **Seamless Flow**: The entire experience—gameplay, questions, and final
+  form—happens on a single canvas without page reloads.
+- **Responsive Design**: Optimized controls for both **Desktop** (keyboard) and
+  **Mobile** (touch/joystick).
 
-Everything happens on a single screen, with no reloads, and with support for both desktop and mobile controls.
+### 📋 Smart Data Collection
 
----
+- **Integrated Form**: Collects user details (Name, Phone, Email) upon
+  completion.
+- **Auto-Grading**: Logic to recommend specific academies based on user answers.
+- **CSV Export**: Automatically saves all submissions to a CSV file for easy
+  data management.
 
-## 📊 Data Logging
+### 🔌 Easy Integration
 
-When the user completes **MISIÓN FUTURO** and submits the final form, the system automatically saves all information into a CSV file.
+- **Shortcode System**: Embed the game anywhere using `[quiz_runner]`.
+- **Standalone Plugin**: No complex configuration required—just install and
+  activate.
 
-**Each entry includes:**
-- Name  
-- Phone  
-- Email  
-- Academy 1 (main result)  
-- Academy 2 (if applicable)  
-- Submission date  
+## 🛠️ Tech Stack
 
-The file updates automatically with each completed run.
+- **Frontend**: Vanilla JavaScript (Canvas API) for the game engine and physics.
+- **Backend**: PHP (WordPress Plugin API) for handling AJAX requests and CSV
+  operations.
+- **Styling**: Responsive CSS for layout and retro aesthetics.
 
----
+## 📦 Installation
 
-## ⚙️ WordPress Integration
+1. **Download** the repository and compress the folder into a `.zip` file.
+2. Go to your **WordPress Admin** > **Plugins** > **Add New**.
+3. Click **Upload Plugin** and select your `.zip` file.
+4. **Activate** the plugin.
+5. Add the shortcode `[quiz_runner]` to any page or post.
 
-**MISIÓN FUTURO** works as a standalone WordPress plugin:
+## 📸 Screenshots
 
-1. The plugin folder is compressed into a `.zip`.  
-2. Install it via *Plugins → Add New → Upload Plugin*.  
-3. Activate it.  
-4. Insert it on any page via shortcode.  
+_(Add your game screenshots here: Start Screen, Gameplay, Final Form)_
 
-No additional configuration required.
+## 📄 License
 
----
-
-## 🛠️ Technologies Used
-
-- **JavaScript (Canvas 2D)**  
-  Lightweight game engine, animations, simple physics, and character control.
-
-- **PHP**  
-  Handles the final form submission and writes data to the CSV.
-
-- **AJAX**  
-  Enables communication between the game and WordPress without page reloads.
-
-- **Responsive CSS**  
-  Layout adjustments for desktop, mobile, and horizontal orientation.
-
-- **WordPress**  
-  Integration environment and data storage point.
-
----
-
-## 🎯 Project Purpose
-
-**MISIÓN FUTURO** was created to improve user experience and make a typically monotonous process more enjoyable.  
-The mix of retro-style gameplay, light narrative, and personalized recommendations provides a memorable interaction while maintaining a clean and efficient data collection flow.
+This project is open-source and available for personal and educational use.
