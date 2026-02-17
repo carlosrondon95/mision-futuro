@@ -2,7 +2,7 @@
 //
 // Motor principal del juego. Toda la lógica de gameplay vive aquí porque
 // separar física, rendering y spawning en ficheros sueltos añadía complejidad
-// sin beneficio real (no usamos bundler).
+// sin beneficio real.
 //
 // Mapa rápido del fichero:
 //
