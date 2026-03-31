@@ -19,10 +19,9 @@ require_once QR_PLUGIN_DIR . 'includes/class-qr-plugin.php';
 require_once QR_PLUGIN_DIR . 'includes/class-qr-assets.php';
 require_once QR_PLUGIN_DIR . 'includes/class-qr-ajax.php';
 require_once QR_PLUGIN_DIR . 'includes/class-qr-shortcode.php';
-require_once QR_PLUGIN_DIR . 'includes/class-qr-mailer.php';
 
 add_action('plugins_loaded', function () {
-  // Inicializa componentes
+  // Instancio e inicializo las clases core del plugin que he diseñado
   (new QR_Assets())->register();
   (new QR_Ajax())->register();
   (new QR_Shortcode())->register();

@@ -46,10 +46,7 @@
           ? this.pad.offsetHeight || 0
           : 0;
 
-      /* --- Ajuste: hacemos el screen un pelín más grande en móvil reduciendo marcos --- */
-      // Antes restabas 16px; ahora 8px para ganar área sin afectar escritorio.
       const margin = 8;
-
       const availW = ww - margin;
       const availH = vh - padH - margin;
 

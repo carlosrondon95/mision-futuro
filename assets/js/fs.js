@@ -48,14 +48,13 @@
       // 1) Intento máximo de fullscreen real
       try {
         if (root.requestFullscreen) {
-          // Navegadores modernos (Android / algunos iOS recientes)
+          // Navegadores modernos
           await root.requestFullscreen({ navigationUI: "hide" });
         } else if (root.webkitRequestFullscreen) {
           // WebKit fallback
           root.webkitRequestFullscreen();
         }
       } catch (e) {
-        // Silencio, seguimos con pseudo-FS
       }
 
       // 2) Intento de bloquear landscape (donde esté soportado)
@@ -145,7 +144,7 @@
       const fsActive =
         !!document.fullscreenElement || !!document.webkitFullscreenElement;
 
-      // Si el navegador ha salido de FS pero nosotros creemos que seguimos, reseteamos
+      // Si el navegador ha salido de FS pero el código piensa que seguimos dentro, lo reseteo
       if (!fsActive && this.isFS) {
         this.exit();
       }
@@ -187,8 +186,8 @@
     _resizeRootToViewport() {
       if (!this.root) return;
 
-      // En iOS Safari la barra de direcciones baila,
-      // así que usamos innerWidth/innerHeight, que es lo más "real" que vamos a tener.
+      // En iOS Safari me di cuenta que la barra de direcciones baila mucho,
+      // así que opté por usar innerWidth/innerHeight, que es lo más "real" que el motor permite leer.
       const w = window.innerWidth || document.documentElement.clientWidth;
       const h = window.innerHeight || document.documentElement.clientHeight;
 

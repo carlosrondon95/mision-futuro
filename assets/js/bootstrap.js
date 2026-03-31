@@ -1,4 +1,6 @@
 // assets/js/bootstrap.js
+// Archivo iniciador principal. Engancha todas las piezas de la UI,
+// carga asíncronamente las imágenes y finalmente levanta la instancia del juego.
 (function () {
   const canvas = document.getElementById("qr-canvas");
   const hudBadge = document.querySelector(".qr-hud .qr-badge");
@@ -7,7 +9,7 @@
   const padEl = document.getElementById("qr-pad");
   if (!canvas || !stage || !appRoot) return;
 
-  // --- Detección base URL del plugin ---
+  // --- Detectar la URL base del plugin y usar rutas relativas ---
   function detectBaseFromScript() {
     const scripts = document.getElementsByTagName("script");
     for (let i = 0; i < scripts.length; i++) {
@@ -24,7 +26,7 @@
         : qrAjax.base_url + "/"
       : detectBaseFromScript();
 
-  // --- Helpers de carga ---
+  // --- Funciones asíncronas de carga (Promises envueltas para esperar el Image.onload) ---
   function loadImage(src) {
     return new Promise((res, rej) => {
       const img = new Image();
@@ -79,7 +81,7 @@
     }, {});
   }
 
-  // --- Detección móvil básica ---
+  // --- Detección móvil simple usando UserAgent y matchMedia ---
   const isMobile = (function () {
     const ua = (
       navigator.userAgent ||

@@ -8,6 +8,7 @@ class QR_Plugin
 
   public function register()
   {
-    (new QR_Mailer())->register();
+    // Antiguamente aquí registraba submódulos.
+    // Usé esta clase como el núcleo central para almacenar constantes globales del proyecto.
   }
 }

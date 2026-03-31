@@ -13,20 +13,17 @@ class QR_Assets
   public function enqueue()
   {
     /**
-     * ANTES:
-     *  - Filtrábamos por has_shortcode() sobre post_content.
-     *  - Elementor no guarda el shortcode en post_content sino en metadatos/plantillas.
-     *  - Resultado: no cargaban JS/CSS y el juego no arrancaba.
-     *
-     * AHORA:
-     *  - Cargamos assets en cualquier página singular.
-     *  - Esto hace que funcione tanto con Gutenberg como con Elementor.
+     * NOTA DE DESARROLLO:
+     * Al principio filtraba por has_shortcode() sobre post_content, pero me di cuenta
+     * de que builders como Elementor no guardan el shortcode directamente ahí.
+     * Por eso decidí cargar mis assets en cualquier página singular (is_singular()), 
+     * garantizando que el juego funcione de forma transparente en cualquier theme.
      */
     if (!is_singular()) {
       return;
     }
 
-    // Versión por fichero (cache bust)
+    // Función auxiliar que creé para el cache busting de archivos estáticos
     $ver = function ($relPath) {
       $path = QR_PLUGIN_DIR . ltrim($relPath, '/');
       return file_exists($path) ? (string) filemtime($path) : (string) time();
@@ -113,7 +110,7 @@ class QR_Assets
       true
     );
 
-    // Datos para AJAX/branding + base_url para rutas
+    // Inyecto mis variables de entorno y paths en window.qrAjax para usarlos desde JS
     wp_localize_script('qr-bootstrap', 'qrAjax', [
       'ajax_url' => admin_url('admin-ajax.php'),
       'nonce' => wp_create_nonce(QR_Ajax::NONCE),

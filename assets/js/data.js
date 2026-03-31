@@ -1,6 +1,6 @@
 // assets/js/data.js
-// Questions, scoring engine, winner selection, and academy bullets.
-// Exposes window.QRData for use by game.js, ui.js, and bootstrap.js.
+// Aquí se extrae la base de datos de preguntas y el propio motor de puntuación.
+// Expongo esto en window.QRData para que otros scripts lo usen limpiamente.
 (function () {
   // =========================================================================
   //  QUESTIONS
@@ -531,7 +531,7 @@
   }
 
   // =========================================================================
-  //  BULLETS (descriptors per academy)
+  //  BULLETS (descriptors por academia)
   // =========================================================================
   function bullets(name) {
     const base =

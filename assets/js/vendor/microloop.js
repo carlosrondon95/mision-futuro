@@ -1,4 +1,4 @@
-/* MicroLoop: bucle de juego e input minimalista (sin dependencias) */
+/* MicroLoop: bucle de juego e input (sin dependencias) */
 (function () {
   const Keys = {
     pressed: new Set(),

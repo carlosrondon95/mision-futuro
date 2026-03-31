@@ -3,24 +3,24 @@
 // Toda la capa visual (modales, formularios, ceremonia) que se superpone
 // al canvas del juego. Genera el HTML dinámicamente y lo inyecta en #qr-stage.
 //
-// Mapa rápido del fichero:
+// Así estructuré este archivo:
 //
 //   Utilidades
-//   ├─ badge / modal infra   → contador "3/12", open/close de modales, eventos
-//   ├─ fitCardToStage()      → escala las tarjetas para que quepan en el stage
-//   └─ space scroll guard    → evita scroll accidental con barra espaciadora
+//   ├─ badge / modal infra   → monté el contador "3/12" y el bus de eventos de modales
+//   ├─ fitCardToStage()      → función para escalar dinámicamente las tarjetas al tamaño
+//   └─ space scroll guard    → listener global para evitar scroll al saltar con barra espaciadora
 //
-//   Modales (en orden de aparición durante el juego)
+//   Modales (flujo que diseñé)
 //   ├─ startModal()          → pantalla de inicio con botón play
-//   ├─ selectHeroModal()     → selector de personaje (hombre / mujer)
-//   ├─ questionModal()       → muestra pregunta con opciones
-//   ├─ formModal()           → formulario final (nombre, email, teléfono + validación)
-//   └─ endingModal()         → ceremonia de asignación: logos, roles, restart
+//   ├─ selectHeroModal()     → menú donde dejo al jugador elegir su avatar
+//   ├─ questionModal()       → tarjeta de pregunta inyectando sus opciones iterativamente
+//   ├─ formModal()           → formulario nativo final con mis validaciones de RegEx
+//   └─ endingModal()         → pantalla final de celebración
 //
-//   Datos de academias
-//   ├─ ACADEMY_META           → mapa id → { label, logo, role } para las 8 academias
-//   ├─ metaFromDecorated()    → traduce "JURISPOL – Escala Ejecutiva" → ACADEMY_META.JURISPOLEE
-//   └─ extractWinners()       → normaliza el resultado de winner() para la ceremonia
+//   Datos Visuales Academias
+//   ├─ ACADEMY_META           → diccionario que armé con la info visual de las academias
+//   ├─ metaFromDecorated()    → parser que hice para traducir el nombre a mi UI
+//   └─ extractWinners()       → adaptador para procesar el ganador de vuelta a la interfaz
 //
 //   Bonus
 //   └─ QRUI.controls          → CSS vars para posicionar el botón start en móvil

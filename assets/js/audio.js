@@ -57,7 +57,7 @@
         if (a.paused) a.currentTime = 0;
         await a.play();
       } catch (e) {
-        // Autoplay bloqueado: reintenta tras cualquier gesto
+        // Autoplay bloqueado por el navegador: preparé este reintento tras cualquier gesto del ratón/dedo
         this._armUnlock();
       }
     },

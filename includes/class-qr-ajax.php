@@ -14,35 +14,35 @@ class QR_Ajax
 
   public function handle()
   {
-    // Validación de nonce (evita envíos falsos)
+    // Valido el nonce de seguridad que envié desde el front
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], self::NONCE)) {
       wp_send_json_error(['message' => 'Sesión caducada. Recarga la página.'], 403);
     }
 
-    // Honeypot (si viene relleno => bot)
+    // Mi honeypot oculto (si viene relleno, asumo que es un bot y lo rechazo)
     $hp = isset($_POST['website']) ? trim((string) $_POST['website']) : '';
     if (!empty($hp)) {
       wp_send_json_error(['message' => 'Spam detectado.'], 400);
     }
 
-    // Datos del formulario
+    // Recojo y sanitizo estrictamente los datos del formulario
     $name = isset($_POST['name']) ? sanitize_text_field(wp_unslash($_POST['name'])) : '';
     $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
     $phone = isset($_POST['phone']) ? sanitize_text_field(wp_unslash($_POST['phone'])) : '';
     $consent = (isset($_POST['consent']) && $_POST['consent'] === '1') ? 'Sí' : 'No';
 
-    // Respuestas completas (por si en el futuro se quieren usar)
+    // Guardo el JSON íntegro de respuestas por si necesito sacar analítica en el futuro
     $answers_json = isset($_POST['answers']) ? wp_unslash($_POST['answers']) : '[]';
     $answers = json_decode($answers_json, true);
     if (!is_array($answers)) {
       $answers = [];
     }
 
-    // Academias calculadas en el front
+    // Recojo los cálculos del ganador que ya hizo mi motor JS
     $academy1 = isset($_POST['academy1']) ? sanitize_text_field(wp_unslash($_POST['academy1'])) : '';
     $academy2 = isset($_POST['academy2']) ? sanitize_text_field(wp_unslash($_POST['academy2'])) : '';
 
-    // Validaciones básicas
+    // Mis validaciones de negocio en backend
     if (empty($name) || empty($email) || !is_email($email)) {
       wp_send_json_error(['message' => 'Revisa nombre y email.'], 422);
     }
@@ -50,7 +50,7 @@ class QR_Ajax
       wp_send_json_error(['message' => 'Debes aceptar la política de privacidad.'], 422);
     }
 
-    // === Guardado en CSV (Excel) ===
+    // === Lógica que desarrollé para generar el backup en CSV (Excel) ===
     $upload_dir = wp_upload_dir();
     if (!empty($upload_dir['error'])) {
       wp_send_json_error(['message' => 'No se pudo acceder al directorio de subidas.'], 500);
@@ -76,26 +76,13 @@ class QR_Ajax
       fputcsv($fh, $header, ';');
     }
 
-    // Fecha del día (según zona horaria de WordPress)
+    // Hallo la fecha actual del registro usando el reloj de WordPress
     $fecha = current_time('Y-m-d');
 
     $row = [$name, $phone, $email, $academy1, $academy2, $fecha];
     fputcsv($fh, $row, ';');
 
     fclose($fh);
-
-    // === Envío de email ===
-    $subject = 'Nuevo Lead Misión Futuro: ' . $name;
-    $body = "<h2>Nuevo registro en Misión Futuro</h2>
-             <p><strong>Nombre:</strong> $name</p>
-             <p><strong>Email:</strong> $email</p>
-             <p><strong>Teléfono:</strong> $phone</p>
-             <p><strong>Academia 1:</strong> $academy1</p>
-             <p><strong>Academia 2:</strong> $academy2</p>
-             <p><strong>Fecha:</strong> $fecha</p>";
-
-    $mailer = new QR_Mailer();
-    $sent = $mailer->send('tucorreo@ejemplo.com', $subject, $body); // TODO: Configurable
 
     wp_send_json_success(['message' => '¡Gracias! Tus datos se han registrado correctamente.']);
   }

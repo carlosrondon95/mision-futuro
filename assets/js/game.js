@@ -101,10 +101,10 @@
       this.flyers = [];
       this.flyTimer = 0;
 
-      // 🔒 Bloqueo temporal de input para evitar salto tras cerrar modal
+      // Bloqueo temporal de input para evitar salto tras cerrar modal
       this.inputLockUntil = 0;
 
-      // ✅ FIX: limpiar fondo estático del stage durante gameplay
+      // FIX: limpiar fondo estático del stage durante gameplay
       this.stageEl = document.getElementById("qr-stage");
       this._savedStageBg = null;
       this._savedStageBgColor = null;
@@ -121,7 +121,7 @@
           code === "ArrowDown" ||
           e.key === " ";
 
-        // ✅ Evita scroll SIEMPRE que no estés escribiendo, aunque haya modal
+        // Bloqueo el scroll nativo SIEMPRE que no estén escribiendo, así la barra espaciadora sirve solo para saltar
         if (isScrollKey && !this.isTypingTarget(e.target)) e.preventDefault();
 
         // Si hay modal o input bloqueado, no procesamos acciones del juego
@@ -443,7 +443,7 @@
 
       this.hero.x += this.hero.dx;
 
-      // ✅ Clamp duro de límites del mundo (alineados con murallas)
+      // Clamp duro para que el héroe no se pase de las murallas
       this.hero.x = clamp(this.hero.x, this.worldMinX, this.worldMaxX);
 
       if (!this.isInputLocked() && this.jumpBufferT > 0) {
@@ -480,15 +480,15 @@
       if (Math.abs(this.hero.x - px) < 36 && this.onGround()) {
         this.hero.dx = 0;
         this.stop();
-
-        // 🔒 Bloquea input mientras aparece el modal
+1
+        // Bloquea input mientras aparece el modal
         this.lockInput(700);
 
         const qObj = QUESTIONS[this.step];
         const isLast =
           this.step === this.stations - 1 || (qObj && qObj.id === "form");
 
-        // 🎵 Al llegar a una puerta suena "puerta", incluso en la última (formulario)
+        // Al llegar a una puerta suena "puerta", incluso en la última (formulario)
         if (window.QRAudio) {
           window.QRAudio.playDoor();
         }
@@ -540,7 +540,7 @@
                 return;
               }
 
-              // 🎵 Victoria SOLO al completar el formulario con éxito
+              // Victoria SOLO al completar el formulario con éxito
               if (window.QRAudio) window.QRAudio.playVictory();
               this.finish();
             } catch {
@@ -565,7 +565,7 @@
               this.step + 1,
               this.stations
             )} / ${this.stations}`;
-          // 📣 Notifica avance al HUD/UI
+          // Notifica avance al HUD/UI
           window.dispatchEvent(
             new CustomEvent("qr:station", { detail: { index: this.step } })
           );
@@ -630,7 +630,7 @@
     }
 
     finish() {
-      // ✅ restauramos fondo del stage para la ceremonia / final
+      // Restauramos fondo del stage para la ceremonia / final
       this.restoreStageBg();
 
       const win = winner(this.score);
